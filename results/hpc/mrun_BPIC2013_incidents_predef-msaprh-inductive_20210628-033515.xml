@@ -1,0 +1,182 @@
+<runStats artifactCreator="predef-msaprh-inductive" machineName="cl4n027.ib0.hpc.qut.edu.au" runnerVersion="2021-06-27">
+   <inputLogFileName>BPIC2013_incidents.xes</inputLogFileName>
+   <inputModelFileName>osmodel_msaprh-inductive_BPIC2013_incidents.pnml</inputModelFileName>
+   <runExportFileName>var/mrun_BPIC2013_incidents_predef-msaprh-inductive_20210628-033515.xml</runExportFileName>
+   <runDateTime>2021-06-28 15:35:14.1 AEST</runDateTime>
+   <nestedRunStats class="java.util.LinkedList"/>
+   <taskRunStats class="java.util.LinkedList">
+      <taskStats taskName="spmlogparser" runState="RUNNING">
+         <duration>0</duration>
+         <start>1624858514001</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="LOG_TRACE_COUNT">
+            <number class="java.lang.Integer">7554</number>
+         </measureStats>
+         <measureStats measure="LOG_EVENT_COUNT">
+            <number class="java.lang.Integer">65533</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Event Ratio Gower&apos;s similarity" runState="SUCCESS">
+         <duration>74</duration>
+         <start>1624858514878</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="EVENT_RATIO_GOWER">
+            <number class="java.lang.Double">0.6925622178113107</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (2) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>47</duration>
+         <start>1624858514952</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_RATIO_GOWER_2">
+            <number class="java.lang.Double">0.3147805978015334</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (3) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>47</duration>
+         <start>1624858514999</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_RATIO_GOWER_3">
+            <number class="java.lang.Double">0.1985721028537727</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (4) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>47</duration>
+         <start>1624858515046</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_RATIO_GOWER_4">
+            <number class="java.lang.Double">0.14712142496797886</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Earth movers&apos; distance by trace" runState="SUCCESS">
+         <duration>29</duration>
+         <start>1624858515093</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="EARTH_MOVERS_TRACEWISE">
+            <number class="java.lang.Double">0.1763304209690314</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy" runState="SUCCESS">
+         <duration>33</duration>
+         <start>1624858515122</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="ENTROPY_TRACEWISE">
+            <number class="java.lang.Double">1.05975583569504</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Precision" runState="SUCCESS">
+         <duration>23</duration>
+         <start>1624858515155</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="ENTROPY_PRECISION_TRACEWISE">
+            <number class="java.lang.Double">0.1283682452461869</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Fitness" runState="SUCCESS">
+         <duration>24</duration>
+         <start>1624858515178</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="ENTROPY_FITNESS_TRACEWISE">
+            <number class="java.lang.Double">0.09427867529743622</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Overlap Ratio" runState="SUCCESS">
+         <duration>31</duration>
+         <start>1624858515202</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_OVERLAP_RATIO">
+            <number class="java.lang.Double">0.17633042096902304</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Probability Mass Overlap" runState="SUCCESS">
+         <duration>31</duration>
+         <start>1624858515233</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_PROBMASS_OVERLAP">
+            <number class="java.lang.Double">0.176330420969023</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace floor (1)" runState="SUCCESS">
+         <duration>30</duration>
+         <start>1624858515264</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_GENERALIZATION_FLOOR_1">
+            <number class="java.lang.Double">0.2588032830288589</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace floor (5)" runState="SUCCESS">
+         <duration>30</duration>
+         <start>1624858515294</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_GENERALIZATION_FLOOR_5">
+            <number class="java.lang.Double">0.2531109346041832</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace floor (10)" runState="SUCCESS">
+         <duration>31</duration>
+         <start>1624858515324</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_GENERALIZATION_FLOOR_10">
+            <number class="java.lang.Double">0.25112523166534284</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace uniqueness diff" runState="SUCCESS">
+         <duration>29</duration>
+         <start>1624858515355</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="TRACE_GENERALIZATION_DIFF_UNIQ">
+            <number class="java.lang.Double">0.17196187450357425</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entity count" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1624858515384</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="MODEL_ENTITY_COUNT">
+            <number class="java.lang.Double">10.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Edge count" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1624858515384</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="MODEL_EDGE_COUNT">
+            <number class="java.lang.Double">12.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Stochastic Structural Uniqueness" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1624858515384</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY">
+            <number class="java.lang.Double">28.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by edge count" runState="SUCCESS">
+         <duration>32</duration>
+         <start>1624858515384</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_EDGE_COUNT">
+            <number class="java.lang.Double">0.9920582395764395</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by entity count" runState="SUCCESS">
+         <duration>4</duration>
+         <start>1624858515416</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_ENTITY_COUNT">
+            <number class="java.lang.Double">0.9933818663136995</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by stochastic structural uniqueness" runState="SUCCESS">
+         <duration>4</duration>
+         <start>1624858515420</start>
+         <errorMessage></errorMessage>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_STOCHASTIC">
+            <number class="java.lang.Double">0.9814692256783587</number>
+         </measureStats>
+      </taskStats>
+   </taskRunStats>
+   <errorMessage></errorMessage>
+   <runState>SUCCESS</runState>
+</runStats>

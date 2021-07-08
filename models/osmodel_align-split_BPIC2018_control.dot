@@ -1,0 +1,57 @@
+digraph G { 
+ranksep=".3"; fontsize="14"; remincross=true; margin="0.0,0.0"; fontname="Arial";rankdir="LR";
+edge [arrowsize="0.5"];
+node [height=".2",width=".2",fontname="Arial",fontsize="14"];
+ratio=0.4;
+id1 [shape="box",label="save\n\n29000",style="filled"];
+id2 [shape="box",label="begin editing\n\n43808",style="filled"];
+id3 [shape="box",label="finish editing\n\n43808",style="filled"];
+id4 [shape="box",label="insert document\n\n6",style="filled"];
+id5 [shape="box",label="take original document\n\n659",style="filled"];
+id6 [shape="box",label="change department\n\n8",style="filled"];
+id7 [shape="box",label="initialize\n\n43808",style="filled"];
+id8 [shape="box",color="black",fontcolor="white",label="t1\n",style="filled"];
+id9 [shape="box",color="black",fontcolor="white",label="t2\n",style="filled"];
+id10 [shape="box",color="black",fontcolor="white",label="t3\n",style="filled"];
+id11 [shape="box",color="black",fontcolor="white",label="t4\n",style="filled"];
+id12 [shape="box",color="black",fontcolor="white",label="t5\n",style="filled"];
+id13 [shape="box",color="black",fontcolor="white",label="t6\n",style="filled"];
+id14 [shape="box",color="black",fontcolor="white",label="t7\n",style="filled"];
+id15 [shape="circle",label=""];
+id16 [shape="circle",label=""];
+id17 [shape="circle",label=""];
+id18 [shape="circle",label=""];
+id19 [shape="circle",label=""];
+id20 [shape="circle",label=""];
+id21 [shape="circle",label=""];
+id22 [shape="circle",label=""];
+id23 [shape="circle",label=""];
+id8 -> id15
+id22 -> id3
+id21 -> id2
+id13 -> id15
+id16 -> id14
+id16 -> id6
+id12 -> id19
+id2 -> id22
+id18 -> id13
+id9 -> id17
+id20 -> id12
+id20 -> id11
+id17 -> id1
+id10 -> id19
+id3 -> id16
+id23 -> id7
+id1 -> id18
+id19 -> id5
+id7 -> id21
+id18 -> id4
+id11 -> id15
+id16 -> id8
+id5 -> id20
+id18 -> id9
+id4 -> id17
+id6 -> id15
+id16 -> id10
+id14 -> id17
+}

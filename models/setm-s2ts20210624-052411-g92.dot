@@ -1,0 +1,36 @@
+digraph G { 
+ranksep=".3"; fontsize="14"; remincross=true; margin="0.0,0.0"; fontname="Arial";rankdir="LR";
+edge [arrowsize="0.5"];
+node [height=".2",width=".2",fontname="Arial",fontsize="14"];
+ratio=0.4;
+id1 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n2",style="filled"];
+id2 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id3 [shape="box",margin="0, 0.1",label="Accepted\n\n2",style="filled"];
+id4 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n2",style="filled"];
+id5 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id6 [shape="box",margin="0, 0.1",label="Accepted\n\n2",style="filled"];
+id7 [shape="box",margin="0, 0.1",label="Completed\n\n1",style="filled"];
+id8 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id9 [shape="circle",label=""];
+id10 [shape="circle",label=""];
+id11 [shape="circle",label=""];
+id12 [shape="circle",label=""];
+id13 [shape="circle",label=""];
+id14 [shape="circle",label=""];
+id11 -> id2
+id8 -> id11
+id4 -> id14
+id1 -> id11
+id13 -> id8
+id14 -> id6
+id11 -> id3
+id6 -> id14
+id2 -> id10
+id9 -> id1
+id14 -> id5
+id5 -> id13
+id12 -> id4
+id13 -> id7
+id7 -> id11
+id3 -> id12
+}

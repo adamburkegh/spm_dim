@@ -1,0 +1,28 @@
+digraph G { 
+ranksep=".3"; fontsize="14"; remincross=true; margin="0.0,0.0"; fontname="Arial";rankdir="LR";
+edge [arrowsize="0.5"];
+node [height=".2",width=".2",fontname="Arial",fontsize="14"];
+ratio=0.4;
+id1 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau split\n\n1",style="filled"];
+id2 [shape="box",margin="0, 0.1",label="Queued\n\n0.150",style="filled"];
+id3 [shape="box",margin="0, 0.1",label="Accepted\n\n1.105",style="filled"];
+id4 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau from tree\n\n1",style="filled"];
+id5 [shape="box",margin="0, 0.1",label="Completed\n\n0.576",style="filled"];
+id6 [shape="circle",label=""];
+id7 [shape="circle",label=""];
+id8 [shape="circle",label=""];
+id9 [shape="circle",label=""];
+id10 [shape="circle",label=""];
+id6 -> id1
+id3 -> id9
+id8 -> id5
+id9 -> id5
+id2 -> id8
+id9 -> id4
+id8 -> id2
+id1 -> id10
+id10 -> id3
+id4 -> id10
+id1 -> id8
+id5 -> id7
+}

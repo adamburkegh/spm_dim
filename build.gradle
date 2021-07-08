@@ -1,0 +1,140 @@
+// BPM Dimensions
+
+import java.text.SimpleDateFormat
+
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+
+    // Apply the application plugin to add support for building a CLI application.
+    id 'application'
+}
+
+apply plugin: 'eclipse'
+
+repositories {
+    mavenLocal()
+    ivy {
+        layout 'pattern' , {
+            artifact '[organisation]/Releases/Packages/[module]/[revision]/[artifact]-[revision].[ext]'
+            ivy '[organisation]/Releases/Packages/[module]/[revision]/ivy.xml'
+        }
+        url = uri('https://svn.win.tue.nl/repos')
+        content {
+            includeGroup 'prom'
+        }
+    }
+    ivy {
+        layout 'pattern' , {
+            artifact '[module]/[revision]/[artifact]-[revision].[ext]'
+            ivy '[module]/[revision]/ivy.xml'
+        }
+        url = uri('https://svn.win.tue.nl/repos/prom/Libraries')
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/adamburkegh/prom-helpers")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.token") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // ProM
+    implementation 'prom:ApacheUtils:latest'
+    implementation 'prom:BasicUtils:latest'
+    implementation 'prom:Widgets:latest'
+    implementation 'prom:Log:latest'
+    implementation 'prom:ProcessTree:latest'
+    implementation 'prom:PTMerge:latest'
+    implementation 'prom:InductiveMiner:latest'
+    implementation 'prom:Properties:latest'
+    implementation 'prom:EfficientStorage:latest'
+    implementation 'prom-libs:approxlib:1.0'        // lib->default in ivy
+    implementation 'prom-libs:RTED:1.0'             // lib->default in ivy
+    // Stochastic conformance measures
+    implementation 'prom:EarthMoversStochasticConformanceChecking:latest'
+    implementation 'prom:StochasticAwareConformanceChecking:latest'
+    
+    // watchmaker genetic algos - use original not jbuijs fork
+    implementation 'org.uncommons.watchmaker:watchmaker-framework:0.7.1'
+    // prom-helpers
+    implementation 'qut.pm:prom-helpers:0.8.6-SNAPSHOT'
+    // utils inherited from ETM
+    implementation 'sshtools:j2ssh-common:0.2.9'
+    implementation 'sshtools:j2ssh-core:0.2.9'
+    implementation 'xerces:xercesImpl:2.11.0'
+    implementation 'xerces:xercesImpl:2.6.2'
+    
+    // Logging and Utils
+    implementation 'org.apache.logging.log4j:log4j-api:2.8.2'
+    implementation 'org.apache.logging.log4j:log4j-core:2.8.2'
+    implementation 'commons-cli:commons-cli:1.4'
+
+    //For JDK 9 or later
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+
+    // gradle
+    implementation 'com.google.guava:guava:29.0-jre'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.13'
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'qut.pm.setm.SETMCommandLine'
+    applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=config/static/log4j2.xml']
+}
+
+
+jar {
+    doFirst {
+        manifest.attributes(
+                'Class-Path':
+                    configurations.runtimeClasspath.files.collect { "$it.name" }.join(' '),
+                'Main-Class': 'qut.pm.setm.ExperimentRunner'
+    )
+  }
+
+  delete 'buildid.txt'
+  outputs.file('buildid.txt')
+  inputs.property('version', project.version)
+
+  doLast {
+    project.file('buildid.txt') << project.version
+    project.file('buildid.txt') <<  new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss").format(new Date())
+  }
+}
+
+
+group = 'qut.pm'
+version = '1.0.0'
+description = 'spmdim'
+sourceCompatibility = '1.8'
+
+
+applicationDistribution.from('config') {
+    into "config"
+}
+
+applicationDistribution.from('scripts') {
+    into "scripts"
+}
+
+distributions {
+    main {
+        distributionBaseName = 'spmdim'
+        contents {
+            from 'buildid.txt'
+        }
+    }
+}
+
+

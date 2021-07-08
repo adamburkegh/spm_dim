@@ -1,0 +1,274 @@
+digraph G { 
+ranksep=".3"; fontsize="14"; remincross=true; margin="0.0,0.0"; fontname="Arial";rankdir="LR";
+edge [arrowsize="0.5"];
+node [height=".2",width=".2",fontname="Arial",fontsize="14"];
+ratio=0.4;
+id1 [shape="box",margin="0, 0.1",label="Accepted\n\n1",style="filled"];
+id2 [shape="box",margin="0, 0.1",label="Accepted\n\n17",style="filled"];
+id3 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n17",style="filled"];
+id4 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id5 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n17",style="filled"];
+id6 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id7 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n1",style="filled"];
+id8 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id9 [shape="box",margin="0, 0.1",label="Accepted\n\n1",style="filled"];
+id10 [shape="box",margin="0, 0.1",label="Unmatched\n\n1",style="filled"];
+id11 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n4",style="filled"];
+id12 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id13 [shape="box",margin="0, 0.1",label="Accepted\n\n1",style="filled"];
+id14 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id15 [shape="box",margin="0, 0.1",label="Unmatched\n\n1",style="filled"];
+id16 [shape="box",margin="0, 0.1",label="Accepted\n\n1",style="filled"];
+id17 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n1",style="filled"];
+id18 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id19 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n1",style="filled"];
+id20 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id21 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id22 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau\n\n1",style="filled"];
+id23 [shape="box",margin="0, 0.1",label="Completed\n\n1",style="filled"];
+id24 [shape="box",margin="0, 0.1",label="Completed\n\n1",style="filled"];
+id25 [shape="box",margin="0, 0.1",label="Completed\n\n1",style="filled"];
+id26 [shape="box",margin="0, 0.1",label="Queued\n\n3",style="filled"];
+id27 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n3",style="filled"];
+id28 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id29 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n3",style="filled"];
+id30 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id31 [shape="box",margin="0, 0.1",label="Accepted\n\n3",style="filled"];
+id32 [shape="box",margin="0, 0.1",label="Queued\n\n3",style="filled"];
+id33 [shape="box",margin="0, 0.1",label="Completed\n\n3",style="filled"];
+id34 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n3",style="filled"];
+id35 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id36 [shape="box",margin="0, 0.1",label="Queued\n\n3",style="filled"];
+id37 [shape="box",margin="0, 0.1",label="Accepted\n\n6",style="filled"];
+id38 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n6",style="filled"];
+id39 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id40 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n5",style="filled"];
+id41 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id42 [shape="box",margin="0, 0.1",label="Unmatched\n\n1",style="filled"];
+id43 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id44 [shape="box",margin="0, 0.1",label="Unmatched\n\n1",style="filled"];
+id45 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id46 [shape="box",margin="0, 0.1",label="Queued\n\n1",style="filled"];
+id47 [shape="box",margin="0, 0.1",label="Accepted\n\n1",style="filled"];
+id48 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n11",style="filled"];
+id49 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id50 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n3.667",style="filled"];
+id51 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id52 [shape="box",margin="0, 0.1",label="Accepted\n\n3.667",style="filled"];
+id53 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau\n\n3.667",style="filled"];
+id54 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau\n\n3.667",style="filled"];
+id55 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucin\n\n11",style="filled"];
+id56 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taucexit\n\n1",style="filled"];
+id57 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau\n\n2.750",style="filled"];
+id58 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulin\n\n2.750",style="filled"];
+id59 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="taulexit\n\n1",style="filled"];
+id60 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="tau\n\n2.750",style="filled"];
+id61 [shape="box",margin="0, 0.1",label="Unmatched\n\n2.750",style="filled"];
+id62 [shape="box",margin="0, 0.1",label="Unmatched\n\n2.750",style="filled"];
+id63 [shape="box",margin="0, 0.1",label="Unmatched\n\n11",style="filled"];
+id64 [shape="circle",label=""];
+id65 [shape="circle",label=""];
+id66 [shape="circle",label=""];
+id67 [shape="circle",label=""];
+id68 [shape="circle",label=""];
+id69 [shape="circle",label=""];
+id70 [shape="circle",label=""];
+id71 [shape="circle",label=""];
+id72 [shape="circle",label=""];
+id73 [shape="circle",label=""];
+id74 [shape="circle",label=""];
+id75 [shape="circle",label=""];
+id76 [shape="circle",label=""];
+id77 [shape="circle",label=""];
+id78 [shape="circle",label=""];
+id79 [shape="circle",label=""];
+id80 [shape="circle",label=""];
+id81 [shape="circle",label=""];
+id82 [shape="circle",label=""];
+id83 [shape="circle",label=""];
+id84 [shape="circle",label=""];
+id85 [shape="circle",label=""];
+id86 [shape="circle",label=""];
+id87 [shape="circle",label=""];
+id88 [shape="circle",label=""];
+id89 [shape="circle",label=""];
+id90 [shape="circle",label=""];
+id91 [shape="circle",label=""];
+id92 [shape="circle",label=""];
+id93 [shape="circle",label=""];
+id94 [shape="circle",label=""];
+id95 [shape="circle",label=""];
+id96 [shape="circle",label=""];
+id97 [shape="circle",label=""];
+id98 [shape="circle",label=""];
+id99 [shape="circle",label=""];
+id100 [shape="circle",label=""];
+id101 [shape="circle",label=""];
+id102 [shape="circle",label=""];
+id103 [shape="circle",label=""];
+id104 [shape="circle",label=""];
+id105 [shape="circle",label=""];
+id106 [shape="circle",label=""];
+id107 [shape="circle",label=""];
+id108 [shape="circle",label=""];
+id109 [shape="circle",label=""];
+id110 [shape="circle",label=""];
+id111 [shape="circle",label=""];
+id112 [shape="circle",label=""];
+id113 [shape="circle",label=""];
+id114 [shape="circle",label=""];
+id115 [shape="circle",label=""];
+id116 [shape="circle",label=""];
+id117 [shape="circle",label=""];
+id118 [shape="circle",label=""];
+id119 [shape="circle",label=""];
+id120 [shape="circle",label=""];
+id76 -> id13
+id109 -> id53
+id55 -> id114
+id97 -> id36
+id75 -> id6
+id84 -> id24
+id42 -> id103
+id4 -> id65
+id38 -> id100
+id110 -> id52
+id8 -> id70
+id88 -> id21
+id105 -> id41
+id116 -> id60
+id54 -> id109
+id52 -> id110
+id109 -> id50
+id61 -> id118
+id68 -> id4
+id104 -> id43
+id46 -> id105
+id24 -> id89
+id5 -> id72
+id89 -> id26
+id98 -> id35
+id35 -> id86
+id17 -> id87
+id11 -> id78
+id77 -> id12
+id3 -> id67
+id22 -> id86
+id80 -> id15
+id5 -> id84
+id30 -> id93
+id9 -> id71
+id51 -> id109
+id23 -> id89
+id104 -> id46
+id44 -> id105
+id103 -> id41
+id1 -> id65
+id91 -> id32
+id39 -> id86
+id64 -> id1
+id14 -> id79
+id12 -> id75
+id117 -> id61
+id101 -> id39
+id5 -> id69
+id62 -> id120
+id88 -> id20
+id115 -> id56
+id2 -> id66
+id58 -> id116
+id84 -> id17
+id81 -> id12
+id19 -> id88
+id79 -> id12
+id73 -> id6
+id47 -> id107
+id55 -> id117
+id100 -> id40
+id49 -> id108
+id15 -> id81
+id27 -> id92
+id36 -> id98
+id66 -> id3
+id32 -> id95
+id78 -> id14
+id7 -> id71
+id18 -> id86
+id5 -> id74
+id41 -> id101
+id71 -> id9
+id6 -> id68
+id10 -> id73
+id72 -> id10
+id37 -> id99
+id45 -> id105
+id108 -> id55
+id86 -> id48
+id70 -> id6
+id85 -> id6
+id90 -> id27
+id31 -> id94
+id113 -> id56
+id38 -> id106
+id64 -> id2
+id109 -> id54
+id84 -> id25
+id21 -> id88
+id106 -> id47
+id40 -> id102
+id13 -> id77
+id28 -> id91
+id59 -> id115
+id71 -> id8
+id93 -> id28
+id69 -> id7
+id112 -> id57
+id110 -> id51
+id67 -> id5
+id74 -> id11
+id60 -> id116
+id16 -> id83
+id116 -> id59
+id109 -> id49
+id118 -> id56
+id40 -> id104
+id87 -> id19
+id48 -> id109
+id56 -> id111
+id43 -> id105
+id95 -> id33
+id114 -> id58
+id84 -> id22
+id11 -> id80
+id87 -> id18
+id25 -> id89
+id96 -> id34
+id107 -> id39
+id83 -> id12
+id99 -> id38
+id92 -> id29
+id11 -> id82
+id11 -> id76
+id104 -> id44
+id111 -> id63
+id50 -> id110
+id20 -> id87
+id104 -> id45
+id55 -> id119
+id84 -> id37
+id94 -> id31
+id120 -> id56
+id82 -> id16
+id84 -> id23
+id119 -> id62
+id102 -> id42
+id29 -> id94
+id55 -> id112
+id26 -> id90
+id33 -> id96
+id57 -> id113
+id63 -> id85
+id34 -> id97
+id94 -> id30
+id53 -> id109
+}

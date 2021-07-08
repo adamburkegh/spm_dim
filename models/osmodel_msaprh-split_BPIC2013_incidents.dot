@@ -1,0 +1,50 @@
+digraph G { 
+ranksep=".3"; fontsize="14"; remincross=true; margin="0.0,0.0"; fontname="Arial";rankdir="LR";
+edge [arrowsize="0.5"];
+node [height=".2",width=".2",fontname="Arial",fontsize="14"];
+ratio=0.4;
+id1 [shape="box",margin="0, 0.1",label="Completed\n\n1.383",style="filled"];
+id2 [shape="box",margin="0, 0.1",label="Queued\n\n0.212",style="filled"];
+id3 [shape="box",margin="0, 0.1",label="Accepted\n\n1.172",style="filled"];
+id4 [shape="box",margin="0, 0.1",label="Unmatched\n\n0.001",style="filled"];
+id5 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t0\n\n1",style="filled"];
+id6 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t1\n\n1",style="filled"];
+id7 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t2\n\n1",style="filled"];
+id8 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t3\n\n1",style="filled"];
+id9 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t4\n\n1",style="filled"];
+id10 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t5\n\n1",style="filled"];
+id11 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t7\n\n1",style="filled"];
+id12 [shape="box",margin="0, 0.1",color="black",fontcolor="white",label="t8\n\n1",style="filled"];
+id13 [shape="circle",label=""];
+id14 [shape="circle",label=""];
+id15 [shape="circle",label=""];
+id16 [shape="circle",label=""];
+id17 [shape="circle",label=""];
+id18 [shape="circle",label=""];
+id19 [shape="circle",label=""];
+id20 [shape="circle",label=""];
+id9 -> id13
+id4 -> id17
+id6 -> id15
+id1 -> id14
+id13 -> id1
+id16 -> id6
+id5 -> id13
+id12 -> id17
+id10 -> id15
+id16 -> id11
+id18 -> id9
+id14 -> id4
+id19 -> id12
+id18 -> id7
+id8 -> id20
+id14 -> id5
+id14 -> id8
+id18 -> id10
+id3 -> id18
+id15 -> id2
+id11 -> id17
+id17 -> id3
+id2 -> id16
+id7 -> id17
+}
