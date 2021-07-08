@@ -103,7 +103,8 @@ public class TraceEntropyMeasureTest {
 		PluginContext uipc = 
 				new HeadlessDefinitelyNotUIPluginContext(new ConsoleUIPluginContext(), "spn_converter");	
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(uipc, 
-									"data" + File.separator + "BPIC2013_closed.xes");
+									"src" + File.separator + "test" + File.separator 
+								   + "resources" + File.separator + "BPIC2013_closed.xes");
 		TraceEntropyFitness traceEntropyFitnessMeasure = new TraceEntropyFitness(measure);
 		double mc = traceEntropyFitnessMeasure.calculate(log,anet, NAME_CLASSIFIER);
 		// logEntropy 					~= 4.20 
