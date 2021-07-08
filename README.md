@@ -12,20 +12,28 @@ The paper describing this experiment is "Burke, A., Leemans, SJJ, Wynn, M.T and 
 
 Checkout [`prom-helpers`](https://github.com/adamburkegh/prom-helpers) 
 
-In `prom-helpers` ./gradlew test ./gradlew publishToMavenLocal
+In `prom-helpers`, `./gradlew test ./gradlew publishToMavenLocal`
 
-In `spd\_dim`, ./gradlew test
+In `spd_dim`, `./gradlew test`
 
 ## R 
 
 Statistical analysis and visualization code is in `scripts`.
 
-## Results
+# Running
+
+Experiments are run with `ExperimentRunner`. It depends on a configuration property file, with examples files in `config`.
+
+A standalone command line interface to SETM is in `SETMCommandLine`.
+
+The class `SETMReporter` extracts experimental data from XML `mrun_*` files to pipe-separated files for import into `R` or other tools.
+
+# Results
 
 Measurements and paradigm models are in `results/` and `models/` respectively.
 
 
-## License
+# License
 
-This project is licensed under the GNU Public License (GPL). The source code extends (and forks) the [ProM EvolutionaryTreeMiner](https://svn.win.tue.nl/repos/prom/Packages/EvolutionaryTreeMiner/Trunk) by Buijs (which is LGPL). 
+This project is licensed under the GNU Public License (GPL). The source code extends (and forks) the [ProM EvolutionaryTreeMiner](https://svn.win.tue.nl/repos/prom/Packages/EvolutionaryTreeMiner/Trunk) by J.C.A.M. Buijs (which is LGPL). 
 
