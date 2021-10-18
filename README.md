@@ -35,5 +35,5 @@ Measurements and paradigm models are in `results/` and `models/` respectively.
 
 # License
 
-This project is licensed under the GNU Public License (GPL). The source code extends (and forks) the [ProM EvolutionaryTreeMiner](https://svn.win.tue.nl/repos/prom/Packages/EvolutionaryTreeMiner/Trunk) by J.C.A.M. Buijs (which is LGPL). 
+This project is licensed under the Lesser GNU Public License (LGPL). The source code extends (and forks) the [ProM EvolutionaryTreeMiner](https://svn.win.tue.nl/repos/prom/Packages/EvolutionaryTreeMiner/Trunk) by J.C.A.M. Buijs (which is LGPL). 
 
