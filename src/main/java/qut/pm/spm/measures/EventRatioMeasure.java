@@ -1,18 +1,16 @@
 package qut.pm.spm.measures;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
-import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class EventRatioMeasure extends TraceRatioMeasure {
 
+	private SubtraceCalculator subtraceCalc = new SubtraceCalculator();
+	
 	public EventRatioMeasure() {
 		super(1);
 	}
@@ -31,25 +29,19 @@ public class EventRatioMeasure extends TraceRatioMeasure {
 		return "ergs";
 	}
 
+	@Override
 	public Measure getMeasure() {
 		return Measure.EVENT_RATIO_GOWER;
 	}
 	
-	protected TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
-		TraceFreq result = new TraceFreq();
-		for (XTrace trace: log) {
-			for (XEvent event: trace) {
-				List<String> subtrace = new ArrayList<>();
-				String classId = classifier.getClassIdentity(event);
-				subtrace.add(classId);
-				result.incTraceFreq(subtrace);
-			}
-		}
-		return result;
+	@Override
+	public TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
+		return subtraceCalc.calculateActivityFreq(log,classifier);
 	}
 
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelEventFreq = calculateForLog(playoutLog,classifier);
+	@Override
+	protected double calculateForPlayout(TraceFreq playoutFreq) {
+		modelEventFreq = subtraceCalc.calculateActivityFreq(playoutFreq);
 		return compareSubtraceFrequencies(logEventFreq,modelEventFreq);
 	}
 

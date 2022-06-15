@@ -15,6 +15,7 @@ import org.junit.Test;
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.prom.helpers.PetrinetExportUtils;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.playout.StochasticPlayoutGenerator;
 import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
 public class TraceRatio2MeasureTest {
@@ -109,6 +110,8 @@ public class TraceRatio2MeasureTest {
 	}
 
 	private void assertMeasureEquals(double expected, XLog log, AcceptingStochasticNet net) {
+		StochasticPlayoutGenerator generator = new StochasticPlayoutGenerator(log.size());
+		measure2 =  new TraceRatioMeasure(generator,2);
 		double val = measure2.calculate(log,net, NAME_CLASSIFIER);
 		if (val - expected > EPSILON || expected - val > EPSILON) {
 			LOGGER.warn(measure2.format());

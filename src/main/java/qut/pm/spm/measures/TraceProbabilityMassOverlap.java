@@ -11,6 +11,7 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class TraceProbabilityMassOverlap extends AbstractStochasticLogCachingMeasure {
@@ -60,8 +61,8 @@ public class TraceProbabilityMassOverlap extends AbstractStochasticLogCachingMea
 	}
 
 	@Override
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelTraceFreq = calculateForLog(playoutLog,classifier);
+	protected double calculateForPlayout(TraceFreq playoutLog) {
+		modelTraceFreq = playoutLog;
 		double result = intersectingProbMass(logTraceFreq,modelTraceFreq);
 		return result; 
 	}
@@ -69,11 +70,14 @@ public class TraceProbabilityMassOverlap extends AbstractStochasticLogCachingMea
 	
 	protected double intersectingProbMass(TraceFreq traceFreq1, TraceFreq traceFreq2) {
 		double result = 0;
+		if (traceFreq1.getTraceTotal() == 0 || traceFreq1.getTraceTotal() == 0) {
+			return 0;
+		}
 		Set<List<String>> keys = new HashSet<>(traceFreq1.keySet());
 		keys.addAll(traceFreq2.keySet());
 		for (List<String> trace : keys ) {
-			long t1 = traceFreq1.getFreq(trace);
-			long t2 = traceFreq2.getFreq(trace);
+			double t1 = traceFreq1.getFreq(trace);
+			double t2 = traceFreq2.getFreq(trace);
 			double intFreq = Math.min(t1,t2);
 			result += intFreq / (double)traceFreq1.getTraceTotal();
 		}

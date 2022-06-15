@@ -210,12 +210,10 @@ public abstract class ETMAbstract<Tracker,Tree> implements ProvidedObjectLifeCyc
 	 * PREVENT SERIALIZATION OF THIS OBJECT
 	 */
 
-	@SuppressWarnings("unused")
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		//throw new NotSerializableException();
 	}
 
-	@SuppressWarnings("unused")
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		//throw new NotSerializableException();
 	}

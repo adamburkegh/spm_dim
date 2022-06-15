@@ -19,6 +19,8 @@ import qut.pm.spm.ppt.ProbProcessTreeProjector;
  */
 public class AddNodeRandom extends TreeMutationAbstract {
 
+	private static final int MAX_REPS = 10;
+
 	public AddNodeRandom(CentralRegistry registry) {
 		super(registry);
 	}
@@ -90,6 +92,10 @@ public class AddNodeRandom extends TreeMutationAbstract {
 	private ProbProcessTreeNode genRandomOperatorNode() {
 		Random rng = registry.getRandom();
 		int oper = rng.nextInt(OPERATORS.length);
+		if (OPERATORS[oper] == PPTOperator.PROBLOOP) {
+			int reps = rng.nextInt(MAX_REPS)+1;
+			return ProbProcessTreeFactory.createLoop(reps);
+		}
 		return ProbProcessTreeFactory.createNode(OPERATORS[oper]);
 	}
 

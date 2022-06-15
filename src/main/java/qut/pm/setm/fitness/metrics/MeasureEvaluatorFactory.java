@@ -14,6 +14,7 @@ import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.measures.StochasticLogCachingMeasure;
 import qut.pm.spm.ppt.ProbProcessTree;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
+import qut.pm.util.ClockUtil;
 
 public class MeasureEvaluatorFactory {
 	
@@ -54,8 +55,11 @@ public class MeasureEvaluatorFactory {
 				anet = converter.convertToSNet(candidate);
 				netCache.put(candidate,anet);
 			}
+			long start = ClockUtil.currentTimeMillis();
 			double result = measure.calculate(log, anet, classifier);
-			exportObserver.recordMeasure(candidate,measure.getMeasure(),result);
+			long end = ClockUtil.currentTimeMillis();
+			long duration = end - start;
+			exportObserver.recordMeasure(candidate,measure.getMeasure(),result,duration);
 			return result;
 		}
 
@@ -64,6 +68,10 @@ public class MeasureEvaluatorFactory {
 			return true;
 		}
 		
+		@Override
+		public String toString() {
+			return "MeasureEvaluatorFactory.MeasureBridge[" + measure.getReadableId() + "]";
+		}
 	}
 	
 	public MeasureEvaluatorFactory(ExportObserver exportObserver) {

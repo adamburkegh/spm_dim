@@ -24,6 +24,7 @@ import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
 import qut.pm.spm.ppt.ProbProcessTree;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
+import qut.pm.spm.ppt.ProbProcessTreeFormatter;
 
 public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 
@@ -67,6 +68,7 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 	}
 	
 	private static Logger LOGGER = LogManager.getLogger();
+
 	private PopulationData<? extends ProbProcessTree> lastGen;
 	private ProbProcessTreeConverter converter = new ProbProcessTreeConverter();
 	private RunStats runStats;
@@ -74,6 +76,7 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 	private String modelPath;
 	private String runId;
 	private Map<TreeMeasureKey,Double> currentGenerationResults = new ConcurrentHashMap<>();
+	private long durationThreshold = 5000;
 	
 	public ExportObserver(RunStats runStats, String outputPath) {
 		this.runStats = runStats;
@@ -93,7 +96,7 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 
 	@Override
 	public void populationUpdate(PopulationData<? extends ProbProcessTree> data) {
-		LOGGER.debug("Exporting generation " + data.getGenerationNumber());
+		LOGGER.debug("Exporting generation ", data.getGenerationNumber());
 		if (lastGen != null && lastGen.getBestCandidate() == data.getBestCandidate() ) {
 			noProgressGeneration(data);
 		}else {
@@ -102,7 +105,11 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 		lastGen = data;
 	}
 	
-	public void recordMeasure(ProbProcessTree tree, Measure measure, double result) {
+	public void recordMeasure(ProbProcessTree tree, Measure measure, double result, long duration) {
+		if (duration > durationThreshold ) {
+			LOGGER.info("Long-running calculation " + duration + " ms for model:");
+			LOGGER.info(new ProbProcessTreeFormatter().textTree(tree));
+		}
 		currentGenerationResults.put( new TreeMeasureKey(tree,measure), result );
 	}
 
@@ -137,7 +144,7 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 	}
 
 	private void noProgressGeneration(PopulationData<? extends ProbProcessTree> data) {
-		LOGGER.debug("No update to best model for generation " + data.getGenerationNumber());
+		LOGGER.debug("No update to best model for generation ", data.getGenerationNumber());
 	}
 
 	private void storeModel(File modelFile, AcceptingStochasticNet stochasticNetDescriptor)

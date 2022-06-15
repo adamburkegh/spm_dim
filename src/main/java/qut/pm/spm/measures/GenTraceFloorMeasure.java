@@ -11,6 +11,7 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class GenTraceFloorMeasure extends AbstractStochasticLogCachingMeasure {
@@ -73,8 +74,8 @@ public class GenTraceFloorMeasure extends AbstractStochasticLogCachingMeasure {
 	}
 
 	@Override
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelTraceFreq = calculateForLog(playoutLog,classifier);
+	protected double calculateForPlayout(TraceFreq playoutLog) {
+		modelTraceFreq = playoutLog;
 		return gencalc(logTraceFreq,modelTraceFreq);
 	}
 

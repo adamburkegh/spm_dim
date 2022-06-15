@@ -23,4 +23,5 @@ public class SETMConfigParams{
 	public String runId = "run";
 	public String buildVersion = "unknown";
 	public String logFileName = "unknownLog";
+	public long playoutGranularity;
 }

@@ -46,7 +46,7 @@ public class RemoveUselessNodes extends TreeMutationAbstract {
 	}
 
 	private ProbProcessTree removeUselessChildren(ProbProcessTreeNode origTree) {
-		ProbProcessTreeNode result = ProbProcessTreeFactory.createNode(origTree.getOperator());
+		ProbProcessTreeNode result = (ProbProcessTreeNode)ProbProcessTreeFactory.createFrom(origTree);
 		for (ProbProcessTree child: origTree.getChildren()) {
 			if ( (ProbProcessTreeCheck.uselessChild(origTree, child) )
 					&& goAhead()) 

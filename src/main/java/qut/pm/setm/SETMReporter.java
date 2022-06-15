@@ -97,6 +97,8 @@ public class SETMReporter {
 		includedMeasures.add(Measure.TRACE_RATIO_GOWER_4);
 		includedMeasures.add(Measure.ENTROPY_FITNESS_TRACEWISE);
 		includedMeasures.add(Measure.ENTROPY_PRECISION_TRACEWISE);
+		includedMeasures.add(Measure.ENTROPY_FITNESS_TRACEPROJECT);
+		includedMeasures.add(Measure.ENTROPY_PRECISION_TRACEPROJECT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_ENTITY_COUNT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_EDGE_COUNT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_STOCHASTIC);
@@ -152,6 +154,9 @@ public class SETMReporter {
 	protected String rewriteLogName(String logFile) {
 		if ("sepsis.xes".equals(logFile)) {
 			return "Sepsis";
+		}
+		if ("rtfmp.xes".equals(logFile)) {
+			return "Road Traffic Fines";
 		}
 		return logFile.substring(0, logFile.length()-4).replace("_", " ");
 	}

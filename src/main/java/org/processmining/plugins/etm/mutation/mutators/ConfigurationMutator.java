@@ -59,7 +59,6 @@ public class ConfigurationMutator extends TreeMutationAbstract {
 		return mutatedTree;
 	}
 
-	@SuppressWarnings("static-method")
 	private int smartChange(CentralRegistryConfigurable reg, ProbProcessArrayTreeImpl mutatedTree) {
 		//First find a spot
 		int node = -1;

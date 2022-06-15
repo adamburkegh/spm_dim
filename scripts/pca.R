@@ -1,6 +1,9 @@
 library(dplyr)
+library(tidyr)
+library(stringr)
 library(ggplot2)
 library(readr)
+library(corrplot)
 library(factoextra)
 library(MVN)
 library(psych)
@@ -11,7 +14,8 @@ workingPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/var/"
 resultsPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/results/"
 
 
-exportPic = TRUE
+exportPic <- TRUE
+matchSampleSizes <- TRUE  # Duplicate data points for underweight sources
 
 ### 
 
@@ -41,21 +45,20 @@ postfig <- function()
 filter_for_BPIC2013_closed <- function(rd){
 	# Based on the correlation matrix, these columns are identical
 	# TRACE_OVERLAP_RATIO TOR == TRACE_PROBMASS_OVERLAP TMO 
-	#  == EARTH_MOVERS_TRACES_nz EMT
 	# TRACE_GENERALIZATION_FLOOR_1 TGF1 == TRACE_GENERALIZATION_FLOOR_5 TGF5 
 	#  == TRACE_GENERALIZATION_FLOOR_10 TGF10
 	# As this is an invalid matrix for factor analysis, exclude.
 	#
 	result <- rd %>% select (
 				  TRACE_PROBMASS_OVERLAP, 
-			        ACTIVITY_RATIO_GOWER,
+			    ACTIVITY_RATIO_GOWER,
 				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
 				  TRACE_RATIO_GOWER_4,
 				  ENTROPY_PRECISION_TRACEWISE,
 				  ENTROPY_FITNESS_TRACEWISE,
 				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
+			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  TRACE_GENERALIZATION_FLOOR_1,
 				  TRACE_GENERALIZATION_DIFF_UNIQ  )
 
@@ -64,19 +67,18 @@ filter_for_BPIC2013_closed <- function(rd){
 filter_for_Sepsis <- function(rd){
 	# Based on the correlation matrix, these columns are identical
 	# TRACE_OVERLAP_RATIO TOR == TRACE_PROBMASS_OVERLAP TMO 
-	#  == EARTH_MOVERS_TRACES_nz EMT == ENTROPY_PRECISION_TRACEWISE EPT
 	#  == ENTROPY_FITNESS_TRACEWISE EFT
 	# TRACE_GENERALIZATION_FLOOR_5 TGF5 == TRACE_GENERALIZATION_FLOOR_10 TGF10
 	# As this is an invalid matrix for factor analysis, exclude.
 	#
 	result <- rd %>% select (
 				  TRACE_PROBMASS_OVERLAP, 
-			        ACTIVITY_RATIO_GOWER,
+			    ACTIVITY_RATIO_GOWER,
 				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
 				  TRACE_RATIO_GOWER_4,
 				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
+			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  TRACE_GENERALIZATION_FLOOR_1,
 				  TRACE_GENERALIZATION_FLOOR_5,
 				  TRACE_GENERALIZATION_DIFF_UNIQ  )
@@ -111,11 +113,44 @@ filter_for_all <- function(rd){
 corheatmap <- function(pv,sel,main){
 	prepfig( paste("heatmap",main,sep=""),sel)
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
-	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col) #,
+	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+	        cexRow = 1.0, cexCol = 1.5) #,
 		# main=paste(sel,main))
 	postfig()
 }
 
+
+normDataSizes <- function(rdf){
+	lc <-	rdf %>% 
+		# filter(gtype == "predef" | gtype == "rando") %>% 
+		select (Log,gtype) %>% 
+		group_by(Log,gtype) %>% 
+		count
+
+	lscale <- data.frame(lc$Log, lc$gtype, floor(1000/lc$n) )
+	colnames(lscale) = c('Log','gtype','scaleBy')
+	rdf <- merge(rdf,lscale)
+	rdf <- rdf %>% 
+		mutate (
+			scaleBy =  case_when (
+						gtype == "setm" 	~ 1,
+						gtype == "rando" 	~ scaleBy,
+						gtype == "predef" ~ scaleBy
+					)
+		)
+	rdf %>% uncount(rdf$scaleBy)
+}
+
+pf <- function(msg){
+    write_lines(msg,resfile,append=TRUE)
+    write_lines(" ",resfile,append=TRUE)
+}
+
+
+pfc <- function(msg){
+    write_lines(capture.output(msg),resfile,append=TRUE)
+    write_lines(" ",resfile,append=TRUE)
+}
 
 
 dev.off()
@@ -123,8 +158,15 @@ dev.new()
 
 
 
-rundata = read.csv( paste(workingPath,"hpc.psv", sep=""),
-            sep ="|", strip.white=TRUE)
+# rundata = read.csv( paste(workingPath,"hpc.psv", sep=""),
+#            sep ="|", strip.white=TRUE)
+
+# rundata = read.csv( paste(workingPath,"hpc1.1.0.psv", sep=""),
+#           	 sep ="|", strip.white=TRUE)
+
+rundata = read.csv( paste(workingPath,"hpc1.2.2.psv", sep=""),
+           		 sep ="|", strip.white=TRUE)
+
 
 logstats <- read.csv( paste(resultsPath,"logstats.csv",sep=""))
 
@@ -139,14 +181,17 @@ rundata <- merge(rundata,logstats)
 # ctlogns <- gsub(" ","_",ctlog)
 
 # ctlog <- 'BPIC2013_closed and Sepsis'
-ctlog <- 'BPIC2013 closed & incidents, BPIC2018 control & reference, and Sepsis'
+# ctlog <- 'BPIC2013 closed & incidents, BPIC2018 control & reference, and Sepsis'
+ctlog <- 'BPIC2013 closed & incidents, BPIC2018 control & reference, Road Traffic Fines and Sepsis'
+
 
 # ctlogns <- 'b2013c_sepsis'  
 ctlogns <- 'all'
 # ctlogns <- 'discorand'
 
 
-nfactors <- 4
+# nfactors <- 4
+nfactors <- 3
 
 
 scalepca <- TRUE
@@ -155,35 +200,115 @@ resfile <-  paste(workingPath,"pca",nfactors,ctlogns,".txt",sep="")
 
 write_lines(paste(ctlogns,"n=",nfactors),resfile)
 
-pf <- function(msg){
-    write_lines(msg,resfile,append=TRUE)
-    write_lines(" ",resfile,append=TRUE)
-}
 
-
-pfc <- function(msg){
-    write_lines(capture.output(msg),resfile,append=TRUE)
-    write_lines(" ",resfile,append=TRUE)
-}
 
 creators <- unique(rundata$Artifact.Creator)
 
 pf("Creators")
 pf(creators)
 
-rundata$EARTH_MOVERS_TRACES_nz <- ifelse(rundata$EARTH_MOVERS_TRACEWISE < 0, 0, 
+rundata$EARTH_MOVERS_TRACEWISE <- ifelse(rundata$EARTH_MOVERS_TRACEWISE < 0, 0, 
 				rundata$EARTH_MOVERS_TRACEWISE)
+rundata$ENTROPY_PRECISION_TRACEPROJECT <- ifelse(rundata$ENTROPY_PRECISION_TRACEPROJECT < 0, 0, 
+                                         rundata$ENTROPY_PRECISION_TRACEPROJECT)
+
+rundata$EARTH_MOVERS_TRACEWISE <- ifelse(rundata$EARTH_MOVERS_TRACEWISE == "-0.0", 0, 
+                                      rundata$EARTH_MOVERS_TRACEWISE)
+rundata$ENTROPY_PRECISION_TRACEPROJECT <- ifelse(rundata$ENTROPY_PRECISION_TRACEPROJECT == "-0.0", 0, 
+                                                 rundata$ENTROPY_PRECISION_TRACEPROJECT)
 
 
-rd <- rundata %>% filter (Log == ctlog) # %>% 
+
+gt <- rundata %>% 
+	select(Artifact.Creator) %>% 
+	separate(Artifact.Creator,c("gtype","dtype"),sep="-",extra="merge") 
+
+rundata$gtype <- gt$gtype
+
+pf(paste("Sample size n =",nrow(rundata)))
+
+fnumericcols <- c(			'Log.Trace.Count',
+                        'Log.Event.Count',
+                        'TRACE_OVERLAP_RATIO',  		# highly correlated 
+                        'TRACE_PROBMASS_OVERLAP',
+                        'EARTH_MOVERS_TRACEWISE',
+                        'EVENT_RATIO_GOWER',
+                        'TRACE_RATIO_GOWER_2','TRACE_RATIO_GOWER_3',
+                        'TRACE_RATIO_GOWER_4',
+                        'ENTROPY_PRECISION_TRACEWISE',
+                        'ENTROPY_FITNESS_TRACEWISE',
+                        'ENTROPY_PRECISION_TRACEPROJECT',
+                        'ENTROPY_FITNESS_TRACEPROJECT',
+                        'STRUCTURAL_SIMPLICITY_ENTITY_COUNT',
+                        'STRUCTURAL_SIMPLICITY_EDGE_COUNT',
+                        'STRUCTURAL_SIMPLICITY_STOCHASTIC',
+                        'TRACE_GENERALIZATION_FLOOR_1', 	# highly correlated 
+                        'TRACE_GENERALIZATION_FLOOR_5',
+                        'TRACE_GENERALIZATION_FLOOR_10',  	# highly correlated 
+                        'TRACE_GENERALIZATION_DIFF_UNIQ'				)
+
+rundata[,fnumericcols] <- sapply(rundata[,fnumericcols], as.numeric)
+
+pf("Data description before rescaling")
+rdd <- describe(rundata,type=2)
+pfc(rdd)
+
+rdprescale <- rundata
+
+
+# rd <- rundata # %>% filter (Log == ctlog) # %>% 
 # rd <- rundata %>% filter (Log == 'BPIC2013 closed' || Log == 'Sepsis') %>% 
-# rd <- rundata %>% filter ( !grepl('setm',Artifact.Creator) ) 
+#rundata <- rundata %>% filter ( !grepl('setm',Artifact.Creator) ) 
 # %>%
 #		      filter ( !grepl('rando',Artifact.Creator) ) %>%
 
+pf("Data description after filtering")
+rdd <- describe(rundata,type=2)
+pfc(rdd)
+
+
+if (matchSampleSizes){
+	rundata <- normDataSizes(rundata)
+}
+
+
+
+
+rdshortname <- rundata %>% select (where(is.numeric) ) %>%
+                           select (-scaleBy,-Log.Id,
+                                   -MODEL_EDGE_COUNT,-MODEL_ENTITY_COUNT,
+                                   -LOG_EVENT_COUNT,-LOG_TRACE_COUNT) %>%
+                    rename(
+                      LTC = Log.Trace.Count,
+                      LEC = Log.Event.Count,
+                      TOR = TRACE_OVERLAP_RATIO ,
+                      TMO = TRACE_PROBMASS_OVERLAP,
+                      EMT = EARTH_MOVERS_TRACEWISE,
+                      ARG = EVENT_RATIO_GOWER,
+                      TRG2 = TRACE_RATIO_GOWER_2,
+                      TRG3 = TRACE_RATIO_GOWER_3,
+                      TRG4 = TRACE_RATIO_GOWER_4,
+                      HPIT = ENTROPY_PRECISION_TRACEWISE,
+                      HFIT = ENTROPY_FITNESS_TRACEWISE,
+                      SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+                      SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
+                      SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
+                      TGF1 = TRACE_GENERALIZATION_FLOOR_1,
+                      TGF5 = TRACE_GENERALIZATION_FLOOR_5,
+                      TGF10 = TRACE_GENERALIZATION_FLOOR_10,
+                      TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
+                      HJPT = ENTROPY_PRECISION_TRACEPROJECT,
+                      HJFT = ENTROPY_FITNESS_TRACEPROJECT )
+
+logcor <- cor(rdshortname)
+prepfig("corlog",ctlogns, width=30, height=30)
+corrplot(logcor, method="number")
+postfig()
+
+
 
 # Exclude very highly correlated columns
-rdo <- rundata %>% 
+rdo <- rd %>% 
 # filter ( Log == 'BPIC2013 closed' || Log == 'BPIC2013 incidents'
 #                        || Log == 'BPIC2018 control' || 'BPIC2018 reference'
 #				|| Log == 'Sepsis' ) %>%
@@ -194,58 +319,65 @@ rdo <- rundata %>%
 				  Log.Id,
 				  Log.Trace.Count,
 				  Log.Event.Count,
-				  # TRACE_OVERLAP_RATIO,
+				  #TRACE_OVERLAP_RATIO,  		# highly correlated 
 				  TRACE_PROBMASS_OVERLAP,
-				  EARTH_MOVERS_TRACES_nz,
-			        EVENT_RATIO_GOWER,
+				  EARTH_MOVERS_TRACEWISE,
+			    EVENT_RATIO_GOWER,
 				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
 				  TRACE_RATIO_GOWER_4,
 				  ENTROPY_PRECISION_TRACEWISE,
 				  ENTROPY_FITNESS_TRACEWISE,
+				  ENTROPY_PRECISION_TRACEPROJECT,
+				  ENTROPY_FITNESS_TRACEPROJECT,
 				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
-				  #TRACE_GENERALIZATION_FLOOR_1,
+			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  #TRACE_GENERALIZATION_FLOOR_1, 	# highly correlated 
 				  TRACE_GENERALIZATION_FLOOR_5,
-				  #TRACE_GENERALIZATION_FLOOR_10,
-				  TRACE_GENERALIZATION_DIFF_UNIQ				)
+				  #TRACE_GENERALIZATION_FLOOR_10,  	# highly correlated 
+				  TRACE_GENERALIZATION_DIFF_UNIQ			,
+				  gtype
+				  )
 
-rdo <- rename(rdo,EARTH_MOVERS_TRACES = EARTH_MOVERS_TRACES_nz,
-			ACTIVITY_RATIO_GOWER= EVENT_RATIO_GOWER)
+rdo <- rename(rdo,ACTIVITY_RATIO_GOWER= EVENT_RATIO_GOWER)
 
 
-rd <- rdo[,-1:-2]
+rd <- subset(rdo, select=-c(Log,Log.Id,gtype))
 
-rdnl <- rdo[,-1:-4]
+rdnl <- subset(rdo, select=-c(Log,Log.Id,Log.Trace.Count,Log.Event.Count,gtype))
 
 # reorder
 rdnl <- rdnl %>%  select (
-				  TRACE_GENERALIZATION_FLOOR_5,
-			        ACTIVITY_RATIO_GOWER,
-				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+  			  ACTIVITY_RATIO_GOWER,
+  			  TRACE_RATIO_GOWER_2,
+  			  TRACE_RATIO_GOWER_3,
+  			  TRACE_RATIO_GOWER_4,
+  			  STRUCTURAL_SIMPLICITY_STOCHASTIC,
+  			  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
-				  #TRACE_GENERALIZATION_FLOOR_1,
-				  #TRACE_GENERALIZATION_FLOOR_10,
-				  EARTH_MOVERS_TRACES,
+				  TRACE_GENERALIZATION_DIFF_UNIQ,
+				  EARTH_MOVERS_TRACEWISE,
 				  TRACE_PROBMASS_OVERLAP,
-				  TRACE_GENERALIZATION_DIFF_UNIQ				,
 				  ENTROPY_PRECISION_TRACEWISE,
-				  TRACE_RATIO_GOWER_4,
-				  TRACE_RATIO_GOWER_3,
-				  TRACE_RATIO_GOWER_2,
-				  ENTROPY_FITNESS_TRACEWISE)
+				  ENTROPY_FITNESS_TRACEWISE,
+				  ENTROPY_PRECISION_TRACEPROJECT,
+				  #TRACE_GENERALIZATION_FLOOR_1,
+				  TRACE_GENERALIZATION_FLOOR_5,
+				  #TRACE_GENERALIZATION_FLOOR_10,				  
+				  ENTROPY_FITNESS_TRACEPROJECT)
 
-pf(paste("Sample size n =",nrow(rd)))
 
 # Basic stats
+pf("Data description after rescaling and selection")
 rdd <- describe(rd,type=2,fast=T)
 pfc(rdd)
+
 
 # collinear columns such as TOR are excluded because of this
 rmardia <- mvn(data=rd,mvnTest="mardia",univariateTest="AD")
 
 pfc(rmardia)
+
 
 # Principal Components
 
@@ -266,12 +398,44 @@ pfc(pcnlv$contrib[,1:nfactors+1])
 #fviz_eig(pcares)
 
 prepfig("screeeig",ctlogns)
-fviz_eig(pcanl)
+print(fviz_eig(pcanl) 
+      + geom_hline(yintercept = 10))
 postfig()
 
 colours <- palette(rainbow(nfactors))
 
+
+
+
 pcaPlots <- FALSE
+ellipsePlot <- TRUE
+
+if (ellipsePlot){
+	prepfig("pcaellipselog",ctlogns)
+	print(
+	  fviz_pca_ind(pcares,
+             	repel = FALSE,     # Avoid text overlapping
+		 	label = "none",
+		 	addEllipses=TRUE, ellipse.level=0.95,
+		 	habillage = rdo$Log
+            	 ) +   
+		labs(title ="", x = "Adhesion", y = "Simplicity") )
+	postfig()
+	prepfig("pcaellipsedc",ctlogns)
+	print(
+	  fviz_pca_ind(pcares,
+	               repel = FALSE,     # Avoid text overlapping
+	               label = "none",
+	               addEllipses=TRUE, ellipse.level=0.95,
+	               habillage = rdo$gtype
+	  ) +   
+	    labs(title ="", x = "Adhesion", y = "Simplicity") )
+	postfig()
+	
+}
+
+
+
 if (pcaPlots){
 fviz_pca_ind(pcares,
              col.ind = "cos2", # Color by the quality of representation
@@ -289,15 +453,6 @@ fviz_pca_ind(pcanl,
              ) +   
 	labs(title ="PCA", x = "PC1", y = "PC2")
 
-
-
-fviz_pca_ind(pcares,
-             repel = FALSE,     # Avoid text overlapping
-		 label = "none",
-		 addEllipses=TRUE, ellipse.level=0.95,
-		 habillage = rdo$Log
-             ) +   
-	labs(title ="", x = "S1-Fitness", y = "Precision")
 
 
 
@@ -331,10 +486,15 @@ fviz_pca_biplot(pcanl, repel = FALSE,
 pvc2 <- pcnlv$cos2[,1:nfactors]
 pvct <- pcnlv$contrib[,1:nfactors]
 
-# colnames(pv) <- c("Adaptive Fit","Overlap","Simplicity","Trace Profile")
-colnames(pvc2) <- c("S1-Fitness","Precision","Simplicity","Trace Profile")
-colnames(pvct) <- c("S1-Fitness","Precision","Simplicity","Trace Profile")
+if (nfactors == 4){
+  colnames(pvc2) <- c("Adhesion","Precision","Simplicity","Trace Profile")
+  colnames(pvct) <- c("Adhesion","Precision","Simplicity","Trace Profile")
+}
 
+if ( nfactors == 3 ){
+  colnames(pvc2) <- c("Adhesion","Simplicity","Entropy")
+  colnames(pvct) <- c("Adhesion","Simplicity","Entropy")
+}
 
 
 corheatmap(pvc2,ctlogns,"cos2")

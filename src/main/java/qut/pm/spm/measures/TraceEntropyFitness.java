@@ -5,10 +5,11 @@ import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.measures.TraceEntropyMeasure.TraceEntropyMeasurement;
 
 public class TraceEntropyFitness implements StochasticLogCachingMeasure {
 
-	private TraceEntropyMeasure traceEntropyMeasure;
+	private TraceEntropyMeasure traceEntropyMeasure = new TraceEntropyMeasure();
 	
 	public TraceEntropyFitness(TraceEntropyMeasure traceEntropyMeasure) {
 		this.traceEntropyMeasure = traceEntropyMeasure;
@@ -26,8 +27,8 @@ public class TraceEntropyFitness implements StochasticLogCachingMeasure {
 
 	@Override
 	public double calculate(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
-		traceEntropyMeasure.calculate(log,net,classifier);
-		return traceEntropyMeasure.getEntropyFitness();
+		TraceEntropyMeasurement tem = traceEntropyMeasure.calculateTraceEntropyMeasure(log,net,classifier);
+		return tem.getEntropyFitness();
 	}
 
 	@Override

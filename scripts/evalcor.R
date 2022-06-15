@@ -20,7 +20,7 @@ prepfig <- function(fprefix,logname, width=30, height=20)
     if (exportPic){
         par(mar=c(1,1,1,1))
         png( paste(workingPath,fprefix,"_",logname,".png",sep=""), 
-			res=300, width=width, height=height, units='cm')
+			       res=300, width=width, height=height, units='cm')
     }
 }
 
@@ -28,11 +28,12 @@ postfig <- function()
 {
     if (exportPic){
         dev.off()
+        graphics.off()
     }
 }
 
 corheatmap <- function(pcain,mname,source,
-		 		dimlabels=c("S1-Fitness","Precision","Simplicity","Trace Profile"))
+		 		dimlabels=c("Adhesion","Precision","Simplicity","Trace Profile"))
 {
       pcv <- get_pca_var(pcain)
 	# pci <- get_pca_ind(pcain)
@@ -42,7 +43,8 @@ corheatmap <- function(pcain,mname,source,
 
 	prepfig("hmevalcont", mname)
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
-	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col) #,
+	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+	    cexRow = 1.0, cexCol = 1.5 )
 		  # main=paste(source,"contributions") )
 	postfig()
 
@@ -51,18 +53,26 @@ corheatmap <- function(pcain,mname,source,
 
 	prepfig("hmevalcos2",mname)
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
-	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col) #,
+	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+	    cexRow = 1.0, cexCol = 1.5 )
 		  # main=paste(source,"cos^2"))
 	postfig()
 }
 
-ctlog <- 'BPIC2013 closed & incidents, BPIC2018 control & reference, and Sepsis'
+
+
+ctlog <- 'BPIC2013 closed & incidents, BPIC2018 control & reference, Road Traffic Fines and Sepsis'
 
 ctlogns <- 'all'
 
-nfactors <- 4
+#nfactors <- 6
+#nfactors <- 5
+#nfactors <- 4
+nfactors <- 3
 
 scree <- TRUE
+
+matchSampleSizes <- TRUE
 
 dev.off()
 dev.new()
@@ -82,48 +92,67 @@ pfc <- function(msg){
     write_lines(" ",resfile,append=TRUE)
 }
 
-rundata = read.csv( paste(workingPath,"eval.psv", sep=""),
+rundata = read.csv( paste(workingPath,"eval2.psv", sep=""),
             sep ="|", strip.white=TRUE)
+
+rundata$ENTROPY_PRECISION_TRACEPROJECT <- ifelse(rundata$ENTROPY_PRECISION_TRACEPROJECT == "-0.0", 0, 
+                                                 rundata$ENTROPY_PRECISION_TRACEPROJECT)
+rundata$ENTROPY_FITNESS_TRACEPROJECT <- ifelse(rundata$ENTROPY_FITNESS_TRACEPROJECT == "-0.0", 0, 
+                                                 rundata$ENTROPY_FITNESS_TRACEPROJECT)
+
+rundata <- rename(rundata,ACTIVITY_RATIO_GOWER=EVENT_RATIO_GOWER)
+
+gt <- rundata %>% 
+  select(Artifact.Creator) %>% 
+  separate(Artifact.Creator,c("gtype","dtype"),sep="-",extra="merge") 
+
+rundata$gtype <- gt$gtype
+
 
 logstats <- read.csv( paste(resultsPath,"logstats.csv",sep=""))
 
 rundata <- merge(rundata,logstats)
 
 
-rundata$EARTH_MOVERS_TRACES_nz <- ifelse(rundata$EARTH_MOVERS_TRACEWISE < 0, 0, 
+rundata$EARTH_MOVERS_TRACEWISE <- ifelse(rundata$EARTH_MOVERS_TRACEWISE < 0, 0, 
 				rundata$EARTH_MOVERS_TRACEWISE)
+
+
+
 
 #rd <- rundata %>% filter (Log == ctlog) %>% 
 # rd <- rundata %>% filter (Log == 'BPIC2013 closed' || Log == 'Sepsis') %>% 
 #		      filter ( !grepl('setm',Artifact.Creator) ) %>%
 #		      filter ( !grepl('rando',Artifact.Creator) ) %>%
 
-rdo <- rundata %>% select (# Model.Run,
+lrdo <- rundata %>% select (# Model.Run,
 				  # Log,
-				  # Log.Trace.Count,
-				  # Log.Event.Count,
-				  TRACE_GENERALIZATION_FLOOR_10,
-				  TRACE_GENERALIZATION_FLOOR_5,
-				  TRACE_GENERALIZATION_FLOOR_1,
-			        EVENT_RATIO_GOWER,
+				  Log.Trace.Count,
+				  Log.Event.Count,
 				  TRACE_OVERLAP_RATIO,
 				  TRACE_PROBMASS_OVERLAP,
 				  TRACE_GENERALIZATION_DIFF_UNIQ,
-				  EARTH_MOVERS_TRACES_nz,
-				  ENTROPY_RECALL,
-				  ENTROPY_PRECISION,
+				  EARTH_MOVERS_TRACEWISE,
+				  STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  ENTROPY_RECALL,
 				  ENTROPY_PRECISION_TRACEWISE,
+				  ENTROPY_PRECISION,
+			    TRACE_RATIO_GOWER_4,
+				  TRACE_RATIO_GOWER_3,				  
+				  TRACE_RATIO_GOWER_2,
+				  ACTIVITY_RATIO_GOWER,
 				  ENTROPY_FITNESS_TRACEWISE,
-				  EARTH_MOVERS_LIGHT_COVERAGE,
-				  TRACE_RATIO_GOWER_4,
-				  TRACE_RATIO_GOWER_3,TRACE_RATIO_GOWER_2
+				  ENTROPY_PRECISION_TRACEPROJECT,
+				  ENTROPY_FITNESS_TRACEPROJECT,
+				  TRACE_GENERALIZATION_FLOOR_10,
+				  TRACE_GENERALIZATION_FLOOR_1,
+				  TRACE_GENERALIZATION_FLOOR_5,				  
+				  EARTH_MOVERS_LIGHT_COVERAGE
 				)
 
-rdo <- rename(rdo,EARTH_MOVERS_TRACES=EARTH_MOVERS_TRACES_nz)
-
+rdo <- lrdo %>% select (-Log.Trace.Count,-Log.Event.Count)
 
 rdearth <- rdo %>% filter ( !is.na(EARTH_MOVERS_LIGHT_COVERAGE ) ) %>%
 		       select (-ENTROPY_PRECISION,-ENTROPY_RECALL)
@@ -134,24 +163,55 @@ rdent <- rdo %>% filter ( !is.na(ENTROPY_PRECISION) ) %>%
 rdee <- rdo %>% filter (!is.na(ENTROPY_PRECISION) ) %>% 
 		    filter (!is.na(EARTH_MOVERS_LIGHT_COVERAGE))
 
+ldee <- lrdo %>% filter (!is.na(ENTROPY_PRECISION) ) %>% 
+                 filter (!is.na(EARTH_MOVERS_LIGHT_COVERAGE))
+
+logshortname <- rename(ldee,
+                       LTC = Log.Trace.Count,
+                       LEC = Log.Event.Count,
+                       TOR = TRACE_OVERLAP_RATIO ,
+                       TMO = TRACE_PROBMASS_OVERLAP,
+                       EMT = EARTH_MOVERS_TRACEWISE,
+                       EM = EARTH_MOVERS_LIGHT_COVERAGE,
+                       ARG = ACTIVITY_RATIO_GOWER,
+                       TRG2 = TRACE_RATIO_GOWER_2,
+                       TRG3 = TRACE_RATIO_GOWER_3,
+                       TRG4 = TRACE_RATIO_GOWER_4,
+                       HP = ENTROPY_PRECISION,
+                       HF  = ENTROPY_RECALL,
+                       HPIT = ENTROPY_PRECISION_TRACEWISE,
+                       HFIT = ENTROPY_FITNESS_TRACEWISE,
+                       SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+                       SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
+                       SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
+                       TGF1 = TRACE_GENERALIZATION_FLOOR_1,
+                       TGF5 = TRACE_GENERALIZATION_FLOOR_5,
+                       TGF10 = TRACE_GENERALIZATION_FLOOR_10,
+                       TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
+                       HJPT = ENTROPY_PRECISION_TRACEPROJECT,
+                       HJFT = ENTROPY_FITNESS_TRACEPROJECT )
+
 emshortname <- rename(rdearth, 
 				  TOR = TRACE_OVERLAP_RATIO ,
 				  TMO = TRACE_PROBMASS_OVERLAP,
-				  EMT = EARTH_MOVERS_TRACES,
+				  EMT = EARTH_MOVERS_TRACEWISE,
 				  EM = EARTH_MOVERS_LIGHT_COVERAGE,
-			        ERG = EVENT_RATIO_GOWER,
+			     ARG = ACTIVITY_RATIO_GOWER,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
 				  TRG4 = TRACE_RATIO_GOWER_4,
-				  EPT = ENTROPY_PRECISION_TRACEWISE,
-				  EFT = ENTROPY_FITNESS_TRACEWISE,
+				  HPIT = ENTROPY_PRECISION_TRACEWISE,
+				  HFIT = ENTROPY_FITNESS_TRACEWISE,
 				  SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
 			        SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  TGF1 = TRACE_GENERALIZATION_FLOOR_1,
 				  TGF5 = TRACE_GENERALIZATION_FLOOR_5,
 				  TGF10 = TRACE_GENERALIZATION_FLOOR_10,
-				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ  )
+				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
+				  HJPT = ENTROPY_PRECISION_TRACEPROJECT,
+				  HJFT = ENTROPY_FITNESS_TRACEPROJECT
+)
 
 emcor <- cor(emshortname)
 
@@ -160,7 +220,7 @@ pf(paste("Sample size n =",nrow(rdearth)))
 pfc(emcor)
 
 prepfig("evalcorem",ctlogns, width=30, height=10)
-corrplot(emcor[7:8,], method="number")
+corrplot(emcor[c("EM","EMT"),], method="number")
 postfig()
 
 
@@ -170,43 +230,49 @@ rdent <- rdo %>% filter ( !is.na(ENTROPY_PRECISION) ) %>%
 entshortname <- rename(rdent, 
 				  TOR = TRACE_OVERLAP_RATIO ,
 				  TMO = TRACE_PROBMASS_OVERLAP,
-				  EMT = EARTH_MOVERS_TRACES,
-			        ERG = EVENT_RATIO_GOWER,
+				  EMT = EARTH_MOVERS_TRACEWISE,
+			    ARG = ACTIVITY_RATIO_GOWER,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
 				  TRG4 = TRACE_RATIO_GOWER_4,
-				  EPT = ENTROPY_PRECISION_TRACEWISE,
-				  EP = ENTROPY_PRECISION,
-				  EFT = ENTROPY_FITNESS_TRACEWISE,
-			        ER  = ENTROPY_RECALL,
+				  HIPT = ENTROPY_PRECISION_TRACEWISE,
+				  HP = ENTROPY_PRECISION,
+				  HIFT = ENTROPY_FITNESS_TRACEWISE,
+			    HF  = ENTROPY_RECALL,
 				  SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
-			        SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
+			    SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  TGF1 = TRACE_GENERALIZATION_FLOOR_1,
 				  TGF5 = TRACE_GENERALIZATION_FLOOR_5,
 				  TGF10 = TRACE_GENERALIZATION_FLOOR_10,
-				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ  )
+				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
+				  HJPT = ENTROPY_PRECISION_TRACEPROJECT,
+				  HJFT = ENTROPY_FITNESS_TRACEPROJECT
+				  )
 
 eeshortname <- rename(rdee, 
 				  TOR = TRACE_OVERLAP_RATIO ,
 				  TMO = TRACE_PROBMASS_OVERLAP,
-				  EMT = EARTH_MOVERS_TRACES,
+				  EMT = EARTH_MOVERS_TRACEWISE,
 				  EM = EARTH_MOVERS_LIGHT_COVERAGE,
-			        ERG = EVENT_RATIO_GOWER,
+			        ARG = ACTIVITY_RATIO_GOWER,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
 				  TRG4 = TRACE_RATIO_GOWER_4,
-				  EPT = ENTROPY_PRECISION_TRACEWISE,
-				  EP = ENTROPY_PRECISION,
-				  EFT = ENTROPY_FITNESS_TRACEWISE,
-			        ER  = ENTROPY_RECALL,
+				  HIPT = ENTROPY_PRECISION_TRACEWISE,
+				  HP = ENTROPY_PRECISION,
+				  HIFT = ENTROPY_FITNESS_TRACEWISE,
+			        HF  = ENTROPY_RECALL,
 				  SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
 			        SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
 				  TGF1 = TRACE_GENERALIZATION_FLOOR_1,
 				  TGF5 = TRACE_GENERALIZATION_FLOOR_5,
 				  TGF10 = TRACE_GENERALIZATION_FLOOR_10,
-				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ  )
+				  TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
+				  HJPT = ENTROPY_PRECISION_TRACEPROJECT,
+				  HJFT = ENTROPY_FITNESS_TRACEPROJECT
+				  )
 
 entcor <- cor(entshortname)
 
@@ -215,8 +281,9 @@ pf(paste("Sample size n =",nrow(rdent)))
 pfc(entcor)
 
 prepfig("evalcorent",ctlogns, width=30, height=10)
-corrplot(entcor[c(8:11),], method="number")
+corrplot(entcor[c("HP","HIPT","HJPT","HF","HIFT","HJFT"),], method="number")
 postfig()
+
 
 pcaearth <- prcomp(rdearth, scale = scalepca)
 
@@ -226,12 +293,18 @@ pcaee <- prcomp(rdee, scale=scalepca)
 
 eecor <- cor(eeshortname)
 
+logcor <- cor(logshortname)
+
 pf("All eval")
 pf(paste("Sample size n =",nrow(rdee)))
 pfc(emcor)
 
 prepfig("evalcor",ctlogns, width=30, height=30)
 corrplot(eecor, method="number")
+postfig()
+
+prepfig("evalcorlog",ctlogns, width=30, height=30)
+corrplot(logcor, method="number")
 postfig()
 
 
@@ -279,28 +352,45 @@ if (pcaPlots){
 
 # prepfig("heatmap",ctlogns)
 col= colorRampPalette(brewer.pal(8, "Blues"))(25)
-heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col)
+heatmap(var, Colv = NA, Rowv = NA,margins=c(10,21), col= col)
 # postfig()
 
 }
 
 
+if (nfactors == 3){
+  dlabels <- c("Adhesion","Entropy","Simplicity")
+}
+if (nfactors == 4){
+  dlabels <- c("Adhesion","Entropy","Simplicity","Subtraceability")
+}
+if (nfactors == 5){
+  dlabels <- c("Adhesion","Simplicity","Trace Profile","Precision","Thingy")
+}
+if (nfactors == 6){
+  dlabels <- c("Thingy","Simplicity","FT1","ST1","ST2","Adhesion")
+}
 
 
-corheatmap(pcaearth,"em","Earth Movers Eval" )
-corheatmap(pcaent,"ent","Entropy Eval")
-corheatmap(pcaee,"eval","Eval", dimlabels=c("S1-Fitness","Simplicity","Precision","Trace Profile"))
+corheatmap(pcaearth,"em","Earth Movers Eval" , dimlabels=dlabels)
+corheatmap(pcaent,"ent","Entropy Eval",  dimlabels=dlabels)
+corheatmap(pcaee,"eval","Eval", dimlabels=dlabels)
+
 
 
 
 
 if (scree){
 	#scree
-	# prepfig("screeeigem",pcaearth)
-	# fviz_eig(pcaearth)
-	# fviz_eig(pcaent)
+	prepfig("screeeigem","pcaearth")
+	print(fviz_eig(pcaearth))
+	postfig()
+	prepfig("screeeigent","pcaent")
+	print(fviz_eig(pcaent))
+	postfig()
 	prepfig("screeeval","eval")
-	fviz_eig(pcaee)
+	print(fviz_eig(pcaee) + 
+	        geom_hline(yintercept = 10))
 	postfig()
 }
 

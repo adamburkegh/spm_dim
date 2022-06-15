@@ -68,8 +68,8 @@ public class AddNodeRandomTest {
 
 	private void hammerMutate(AddNodeRandom anr, ProbProcessTreeNode ppt) {
 		ProbProcessTree current = ppt;
-		// Starts to hit integer overflows over ~3500
-		for (int i=0; i<3000; i++) {
+		// Starts to hit integer overflows over ~2800
+		for (int i=0; i<2800; i++) {
 			try {
 				current = anr.mutate(current);
 			}catch (Exception e) {

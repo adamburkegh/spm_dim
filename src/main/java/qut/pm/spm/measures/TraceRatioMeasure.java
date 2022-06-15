@@ -1,25 +1,24 @@
 package qut.pm.spm.measures;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
-import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class TraceRatioMeasure extends AbstractStochasticLogCachingMeasure {
 
 	protected TraceFreq logEventFreq;
 	protected TraceFreq modelEventFreq;
+	protected SubtraceCalculator subtraceCalc = new SubtraceCalculator();
 	
 	protected final int subtraceLength;
+	
 
 	public Measure getMeasure() {
 		switch(subtraceLength) {
@@ -62,31 +61,12 @@ public class TraceRatioMeasure extends AbstractStochasticLogCachingMeasure {
 
 	
 	protected TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
-		TraceFreq result = new TraceFreq();
-		for (XTrace trace: log) {
-			LinkedList<List<String>> subtraces = new LinkedList<List<String>>();
-			for (XEvent event: trace) {
-				String classId = classifier.getClassIdentity(event);
-				ListIterator<List<String>> lli = subtraces.listIterator();
-				while(lli.hasNext() ) {
-					List<String> subtrace = lli.next();
-					subtrace.add(classId);
-					if (subtrace.size() == subtraceLength) {
-						result.incTraceFreq(subtrace);
-						lli.remove();
-					}
-				}
-				LinkedList<String> newTrace = new LinkedList<String>();
-				newTrace.add(classId);
-				subtraces.add(newTrace);
-			}
-		}
-		return result;
+		return subtraceCalc.calculateForLog(log,classifier,subtraceLength);
 	}
-
+	
 	@Override
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelEventFreq = calculateForLog(playoutLog,classifier);
+	protected double calculateForPlayout(TraceFreq playoutLog) {
+		modelEventFreq = subtraceCalc.calculateForTraceFreq(playoutLog, subtraceLength);
 		return compareSubtraceFrequencies(logEventFreq,modelEventFreq);
 	}
 

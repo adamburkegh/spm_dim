@@ -1,31 +1,35 @@
 
-rundata = read.csv( paste(workingPath,"hpc.psv", sep=""),
+rundata = read.csv( paste(workingPath,"hpc1.2.2.psv", sep=""),
             sep ="|", strip.white=TRUE)
 
 grando <- rundata %>% filter ( !grepl('predef',Artifact.Creator) )
 
-disco = read.csv( paste(workingPath,"eval.psv", sep=""),
+disco = read.csv( paste(workingPath,"eval2.psv", sep=""),
             sep ="|", strip.white=TRUE)
 
+disco$ENTSUM = disco$ENTROPY_PRECISION+disco$ENTROPY_RECALL
+disco$ADSIM  = disco$EARTH_MOVERS_LIGHT_COVERAGE + disco$STRUCTURAL_SIMPLICITY_STOCHASTIC
+disco$ENTSIM  = disco$ENTSUM + disco$STRUCTURAL_SIMPLICITY_STOCHASTIC
 
 # paradigm models
 
 
-# High fitness and simplicity (by earth movers), low precision and ARG
+# High adhesion and simplicity (by earth movers), low entropy
 
 fs <- disco %>% 
-	arrange(-EARTH_MOVERS_LIGHT_COVERAGE,-STRUCTURAL_SIMPLICITY_ENTITY_COUNT,ENTROPY_PRECISION) %>% 
-	select(EARTH_MOVERS_LIGHT_COVERAGE,STRUCTURAL_SIMPLICITY_ENTITY_COUNT,ENTROPY_PRECISION,
-		 EVENT_RATIO_GOWER,Run.file)
+	arrange(-ADSIM,ENTSUM) %>% 
+	select(EARTH_MOVERS_LIGHT_COVERAGE,STRUCTURAL_SIMPLICITY_STOCHASTIC,ENTSUM,
+	       ENTROPY_PRECISION,ENTROPY_RECALL,
+	       Run.file)
 
 # Row 7: mrun_BPIC2018_reference_predef-aplh-inductive_20210630-023627.xml
 
 
-# Low fitness (by earth movers), high precision and simplicity
+# Low fitness (by earth movers), high entropy and simplicity
 
-ps <- disco %>% arrange(EARTH_MOVERS_LIGHT_COVERAGE,-STRUCTURAL_SIMPLICITY_ENTITY_COUNT,-ENTROPY_PRECISION)  %>% 
-		      select(EARTH_MOVERS_LIGHT_COVERAGE,ENTROPY_FITNESS_TRACEWISE,STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
-			  	 ENTROPY_PRECISION,EVENT_RATIO_GOWER,Run.file) %>% 
+ps <- disco %>% arrange(-ENTSIM,EARTH_MOVERS_LIGHT_COVERAGE)  %>% 
+		      select(EARTH_MOVERS_LIGHT_COVERAGE,STRUCTURAL_SIMPLICITY_STOCHASTIC,
+			  	 ENTROPY_PRECISION,ENTROPY_RECALL,ENTSUM,Run.file) %>% 
 			filter(EARTH_MOVERS_LIGHT_COVERAGE>0)
 
 # mrun_BPIC2013_incidents_predef-aprh-inductive_20210628-033448.xml

@@ -135,7 +135,7 @@ public class RemoveUselessNodeTest {
 		ProbProcessTreeNode ppt = ProbProcessTreeFactory.createNode(PPTOperator.CONCURRENCY);
 		ProbProcessTree childa = ProbProcessTreeFactory.createLeaf("a",1);
 		ProbProcessTree childb = ProbProcessTreeFactory.createLeaf("b",1);
-		ProbProcessTreeNode loop = ProbProcessTreeFactory.createNode(PPTOperator.PROBLOOP);
+		ProbProcessTreeNode loop = ProbProcessTreeFactory.createLoop(5);
 		ProbProcessTree silent = ProbProcessTreeFactory.createSilent(1);
 		loop.addChildren(silent);
 		ppt.addChildren(childa,childb,loop);
@@ -155,7 +155,7 @@ public class RemoveUselessNodeTest {
 		ProbProcessTreeNode ppt = ProbProcessTreeFactory.createNode(PPTOperator.CONCURRENCY);
 		ProbProcessTree childa = ProbProcessTreeFactory.createLeaf("a",1);
 		ProbProcessTree childb = ProbProcessTreeFactory.createLeaf("b",1);
-		ProbProcessTreeNode loop = ProbProcessTreeFactory.createNode(PPTOperator.PROBLOOP);
+		ProbProcessTreeNode loop = ProbProcessTreeFactory.createLoop(3);
 		ProbProcessTreeNode silentSeq = ProbProcessTreeFactory.createSequence();
 		ProbProcessTree silent = ProbProcessTreeFactory.createSilent(1);
 		silentSeq.addChild(silent);

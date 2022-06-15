@@ -19,7 +19,6 @@ import org.deckfour.xes.out.XMxmlSerializer;
 
 public class LogCreator {
 
-	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
 
 		String folderName = "C://Users//bfvdonge//Documents//My Dropbox//Boudewijn Werk//Research//Papers//2011 ToPNoC ACPN//";

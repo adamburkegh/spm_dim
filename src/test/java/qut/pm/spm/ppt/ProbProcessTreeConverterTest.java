@@ -1,5 +1,6 @@
 package qut.pm.spm.ppt;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -9,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
+import org.processmining.models.graphbased.directed.petrinet.elements.TimedTransition;
 import org.processmining.models.graphbased.directed.petrinet.elements.Transition;
 
 import qut.pm.prom.helpers.NodeMapper;
@@ -18,6 +20,8 @@ import qut.pm.prom.helpers.StochasticPetriNetUtils;
 import qut.pm.spm.AcceptingStochasticNet;
 
 public class ProbProcessTreeConverterTest {
+
+	private static final double EPSILON = 0.001;
 
 	private static Logger LOGGER = LogManager.getLogger();
 	
@@ -115,7 +119,7 @@ public class ProbProcessTreeConverterTest {
 	@Test
 	public void convertLoop() {
 		ProbProcessTree la = ProbProcessTreeFactory.createLeaf("a",1.0d);
-		ProbProcessTreeNode loop = ProbProcessTreeFactory.createNode(PPTOperator.PROBLOOP);
+		ProbProcessTreeNode loop = ProbProcessTreeFactory.createLoop(2.0d);
 		loop.addChildren(la);
 		AcceptingStochasticNet expected = parser.createAcceptingNet("ppt", 
 				"Start -> {tau__1} -> midloop -> {tau__2} -> End");
@@ -132,12 +136,37 @@ public class ProbProcessTreeConverterTest {
 		assertTrue( StochasticPetriNetUtils.areEqualWithDupes(expected.getNet(), 
 				pptNet, nme, nmp ) );		
 	}
+	
+	@Test
+	public void convertLoop2() {
+		ProbProcessTree la = ProbProcessTreeFactory.createLeaf("a",3.0d);
+		ProbProcessTreeNode loop = ProbProcessTreeFactory.createLoop(2.0);
+		loop.addChildren(la);
+		AcceptingStochasticNet expected = parser.createAcceptingNet("ppt", 
+				"Start -> {tau__1 3.0} -> midloop -> {tau__2 1.5} -> End");
+		NodeMapper nme = parser.addToAcceptingNet(expected,
+				"midloop -> {a 1.5} -> midloop");
+		StochasticNet pptNet = converter.convertToSNet(loop).getNet();
+		NodeMapper nmp = new NodeMapper(); 
+		TimedTransition tauin = findUniqueTransition(pptNet,"taulin");
+		TimedTransition tauout = findUniqueTransition(pptNet,"taulexit");
+		TimedTransition ta = findUniqueTransition(pptNet,"a");
+		// mapping process doesn't compare weights properly
+		assertEquals(3.0d, tauin.getWeight(), EPSILON);
+		assertEquals(1.5d, tauout.getWeight(), EPSILON);
+		assertEquals(1.5d, ta.getWeight(), EPSILON);
+		nmp.put(tauin,"tau__1");
+		nmp.put(tauout,"tau__2");
+		nmp.put(ta,"a");
+		assertTrue( StochasticPetriNetUtils.areEqualWithDupes(expected.getNet(), 
+				pptNet, nme, nmp ) );		
+	}
 		
-	private Transition findUniqueTransition(StochasticNet pptNet, String label) {
+	private TimedTransition findUniqueTransition(StochasticNet pptNet, String label) {
 		Collection<Transition> transitions = pptNet.getTransitions();
 		for (Transition tran: transitions) {
 			if (label.equals(tran.getLabel())){
-				return tran;
+				return (TimedTransition)tran;
 			}
 		}
 		return null;
@@ -170,7 +199,7 @@ public class ProbProcessTreeConverterTest {
 		ProbProcessTree ld = ProbProcessTreeFactory.createLeaf("D",1.0d);
 		ProbProcessTree le = ProbProcessTreeFactory.createLeaf("E",1.0d);
 		ProbProcessTree silent = ProbProcessTreeFactory.createSilent(1.0d);
-		ProbProcessTreeNode sloop = ProbProcessTreeFactory.createLoop();
+		ProbProcessTreeNode sloop = ProbProcessTreeFactory.createLoop(7.0);
 		sloop.addChild(silent);
 		ProbProcessTreeNode seq = ProbProcessTreeFactory.createSequence();
 		seq.addChildren(lb,le,sloop,la);

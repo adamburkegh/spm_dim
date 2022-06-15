@@ -64,7 +64,8 @@ dependencies {
     // watchmaker genetic algos - use original not jbuijs fork
     implementation 'org.uncommons.watchmaker:watchmaker-framework:0.7.1'
     // prom-helpers
-    implementation 'qut.pm:prom-helpers:0.8.6-SNAPSHOT'
+    implementation 'qut.pm:prom-helpers:0.8.6'
+    implementation 'qut.pm:prob-process-tree:0.2.1'
     // utils inherited from ETM
     implementation 'sshtools:j2ssh-common:0.2.9'
     implementation 'sshtools:j2ssh-core:0.2.9'
@@ -115,7 +116,7 @@ jar {
 
 
 group = 'qut.pm'
-version = '1.0.0'
+version = '1.2.4'
 description = 'spmdim'
 sourceCompatibility = '1.8'
 

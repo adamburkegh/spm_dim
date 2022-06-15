@@ -9,16 +9,18 @@ import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.TraceFreq;
 
 public class CachingPlayoutGenerator implements PlayoutGenerator{
 
 	private static Logger LOGGER = LogManager.getLogger();
 	
+	// TODO probably redundant
 	private static class Key{
 		public AcceptingStochasticNet net;
-		public Integer targetSize;
+		public Long targetSize;
 			
-		public Key(AcceptingStochasticNet net, Integer targetSize) {
+		public Key(AcceptingStochasticNet net, Long targetSize) {
 			super();
 			this.net = net;
 			this.targetSize = targetSize;
@@ -56,21 +58,62 @@ public class CachingPlayoutGenerator implements PlayoutGenerator{
 				
 	}
 	
-	private PlayoutGenerator generator = new StochasticPlayoutGenerator();
-	private Map<Key,XLog> cache = Collections.synchronizedMap( new WeakHashMap<>() );
+	private PlayoutGenerator generator;
+	private Map<Key,XLog> xlogCache = Collections.synchronizedMap( new WeakHashMap<>() );
+	private Map<Key,TraceFreq> tfCache = Collections.synchronizedMap( new WeakHashMap<>() );
+	
+	public CachingPlayoutGenerator(long targetSize) {
+		generator = new StochasticPlayoutGenerator(targetSize);
+	}
 	
 	@Override
-	public XLog buildPlayoutLog(AcceptingStochasticNet net, int targetSize) {
+	public XLog buildPlayoutLog(AcceptingStochasticNet net, long targetSize) {
 		LOGGER.debug("Checking cached playout log");
 		Key key = new Key(net,targetSize);
-		XLog result = cache.get( key );
+		XLog result = xlogCache.get( key );
 		if (result == null) {
-			result = generator.buildPlayoutLog(net,targetSize);
-			cache.put(key,result);
+			result = generator.buildPlayoutLog(net);
+			xlogCache.put(key,result);
 		}else {
 			LOGGER.debug("Using cached playout log");
 		}
 		return result;
 	}
 
+	@Override
+	public XLog buildPlayoutLog(AcceptingStochasticNet net) {
+		return buildPlayoutLog(net,getTargetSize());
+	}
+
+	
+	@Override
+	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net, long targetSize) {
+		LOGGER.debug("Checking cached playout log");
+		Key key = new Key(net,targetSize);
+		TraceFreq result = tfCache.get( key );
+		if (result == null) {
+			result = generator.buildPlayoutTraceFreq(net,targetSize);
+			tfCache.put(key,result);
+		}else {
+			LOGGER.debug("Using cached playout log");
+		}
+		return result;
+	}
+	
+	@Override
+	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net) {
+		return buildPlayoutTraceFreq(net,getTargetSize());
+	}
+
+	
+	@Override
+	public long getTargetSize() {
+		return generator.getTargetSize();
+	}
+
+	@Override
+	public TraceFreq scaleTo(TraceFreq tf, int newTargetSize) {
+		return generator.scaleTo(tf,newTargetSize);
+	}
+	
 }

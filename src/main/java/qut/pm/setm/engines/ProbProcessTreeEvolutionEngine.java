@@ -65,9 +65,9 @@ public class ProbProcessTreeEvolutionEngine extends GenerationalTreeEvolutionEng
 			LOGGER.debug( evalCandidate.getCandidate() );
 			if (evalCandidate.getFitness() > maxFitness)
 				maxFitness = evalCandidate.getFitness();
-			LOGGER.debug( "Fitness:" + evalCandidate.getFitness() );
+			LOGGER.debug( "Fitness:", evalCandidate.getFitness() );
 		}
-		LOGGER.info("Max Fitness for this generation: " + maxFitness);
+		LOGGER.info("Max Fitness for this generation: ", maxFitness);
 	}
 
 	@Override

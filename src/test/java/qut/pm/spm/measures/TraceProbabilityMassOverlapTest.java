@@ -61,7 +61,7 @@ public class TraceProbabilityMassOverlapTest {
 				  "Start -> {c} -> p2 -> {d} -> End");
 		parser.addToAcceptingNet(net,
 				  "Start -> {e} -> p3 -> {f} -> End");
-		assertMeasureEquals(1.0d, log,net);
+		assertMeasureEquals(0.667d, log,net);
 	}
 
 	@Test

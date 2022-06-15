@@ -1,10 +1,8 @@
 package qut.pm.spm.ppt;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import qut.pm.setm.mutation.MutationException;
 
 public class ProbProcessTreeMutationTest {
 
@@ -31,7 +29,7 @@ public class ProbProcessTreeMutationTest {
 		assertEquals(child3,result);
 	}
 	
-	@Test(expected = MutationException.class)
+	@Test(expected = ProcessTreeConsistencyException.class)
 	public void findPastTree() {	
 		ProbProcessTreeNode ppt = ProbProcessTreeFactory.createNode(PPTOperator.CHOICE);
 		ProbProcessTree child1 = ProbProcessTreeFactory.createLeaf("a",1);
@@ -109,7 +107,7 @@ public class ProbProcessTreeMutationTest {
 		ProbProcessTree childb = ProbProcessTreeFactory.createLeaf("b",1);
 		ProbProcessTree childc = ProbProcessTreeFactory.createLeaf("c",1);
 		ppt.addChildren(childa,childb,childc);
-		ProbProcessTreeNode loopd = ProbProcessTreeFactory.createLoop();
+		ProbProcessTreeNode loopd = ProbProcessTreeFactory.createLoop(1);
 		loopd.addChild(ProbProcessTreeFactory.createLeaf("d",1) );
 		ProbProcessTree result = ProbProcessTreeProjector.replaceSubNode(ppt,1,loopd);
 		ProbProcessTreeNode expected = ProbProcessTreeFactory.createNode(PPTOperator.CHOICE);

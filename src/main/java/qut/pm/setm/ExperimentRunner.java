@@ -19,7 +19,9 @@ import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
+import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
+import org.deckfour.xes.model.XTrace;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
@@ -41,6 +43,7 @@ import qut.pm.setm.parameters.SETMParam;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.AcceptingStochasticNetImpl;
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.measures.EarthMoversTraceMeasure;
 import qut.pm.spm.measures.EdgeCount;
 import qut.pm.spm.measures.EntityCount;
@@ -58,6 +61,8 @@ import qut.pm.spm.measures.StochasticStructuralUniqueness;
 import qut.pm.spm.measures.TraceEntropyFitness;
 import qut.pm.spm.measures.TraceEntropyMeasure;
 import qut.pm.spm.measures.TraceEntropyPrecision;
+import qut.pm.spm.measures.TraceEntropyProjectFitness;
+import qut.pm.spm.measures.TraceEntropyProjectPrecision;
 import qut.pm.spm.measures.TraceOverlapRatioMeasure;
 import qut.pm.spm.measures.TraceProbabilityMassOverlap;
 import qut.pm.spm.measures.TraceRatioMeasure;
@@ -72,7 +77,7 @@ public class ExperimentRunner {
 
 	private enum RunType {
 		EXISTING_MODEL, EXISTING_MODEL_COLLECTION_SURVIVAL, EXISTING_MODEL_COLLECTION_EVAL, RANDOM_GENERATION,
-		RANDOM_GENERATION_ONLY, GENETIC_MINER;
+		RANDOM_GENERATION_ONLY, GENETIC_MINER, LOG_STATS_ONLY;
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -95,12 +100,14 @@ public class ExperimentRunner {
 	private int randomMaxDepth = 0;
 	private int genModelTarget = 0;
 	private boolean storeRandomModels;
+	private long playoutGranularity;
 	private PlayoutGenerator generator;
 	private int randomMaxTransitions;
 	private int randomModelStartAt;
 	private SETMConfigParams setmConfigParams;
 	private SETMConfiguration setmConfig;
 	private RunStatsExporter runStatsExporter;
+
 
 
 	private void configure() throws Exception {
@@ -115,7 +122,7 @@ public class ExperimentRunner {
 		pluginContext = new HeadlessDefinitelyNotUIPluginContext(new ConsoleUIPluginContext(), "experimentrunner");
 		runStatsExporter = new RunStatsExporter(outputDir);
 		configureBuildId();
-		configureMeasures();
+		configureMeasures(cfg);
 		configureEval(cfg);
 		configureRandomGeneration(cfg);
 		configureRunType(cfg);
@@ -170,8 +177,9 @@ public class ExperimentRunner {
 		storeRandomModels = Boolean.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_RANDOM_STORE_MODELS,"false"));
 	}
 
-	private void configureMeasures() {
-		generator = new CachingPlayoutGenerator();
+	private void configureMeasures(Properties cfg) {
+		playoutGranularity = Long.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_PLAYOUT_GRANULARITY, "1000"));
+		generator = new CachingPlayoutGenerator(playoutGranularity);
 		netMeasures = new ArrayList<>();
 		netMeasures.add(new EventRatioMeasure(generator));
 		netMeasures.add(new TraceRatioMeasure(generator, 2));
@@ -179,9 +187,10 @@ public class ExperimentRunner {
 		netMeasures.add(new TraceRatioMeasure(generator, 4));
 		netMeasures.add(new EarthMoversTraceMeasure(generator));
 		TraceEntropyMeasure tem = new TraceEntropyMeasure(generator);
-		netMeasures.add(tem);
 		netMeasures.add(new TraceEntropyPrecision(tem));
 		netMeasures.add(new TraceEntropyFitness(tem));
+		netMeasures.add(new TraceEntropyProjectFitness(tem));
+		netMeasures.add(new TraceEntropyProjectPrecision(tem));
 		netMeasures.add(new TraceOverlapRatioMeasure(generator));
 		netMeasures.add(new TraceProbabilityMassOverlap(generator));
 		netMeasures.add(new GenTraceFloorMeasure(generator, 1));
@@ -220,6 +229,10 @@ public class ExperimentRunner {
 		LOGGER.info("Loading log from " + inputLogFileName);
 		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(pluginContext, inputLogFileName);
 		initLogInfo(log);
+		XLogInfo xinfo = log.getInfo(classifier);
+		LOGGER.info("Log name: {} Events: {} Activities: {} Traces: {} Total traces: {}",
+				inputLogName, xinfo.getNumberOfEvents(), xinfo.getEventClasses().size(), 
+				xinfo.getNumberOfTraces(), log.size() );
 		stats.setMeasure(Measure.LOG_TRACE_COUNT, log.size());
 		stats.setMeasure(Measure.LOG_EVENT_COUNT, log.getInfo(classifier).getNumberOfEvents());
 		return log;
@@ -322,16 +335,13 @@ public class ExperimentRunner {
 						+ " edges.");
 				if (storeRandomModels)
 					storeModel(new File(outputDir + File.separator + "rando-" + mname + ".pnml"), snet);
-				generator.buildPlayoutLog(snet, 5000);
 				modelStats.markEnd();
 				runStats.addSubRun(modelStats);
-
 			}
 		} catch (Exception e) {
 			closeRunWithError(runStats, e);
 			throw new ExperimentRunException(e);
 		}
-
 		closeRun(runStats);
 	}
 
@@ -513,6 +523,36 @@ public class ExperimentRunner {
 		closeRun(runStats);
 	}
 
+	private TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
+		TraceFreq result = new TraceFreq();
+		for (XTrace trace: log) {
+			LinkedList<String> newTrace = new LinkedList<String>();
+			for (XEvent event: trace) {
+				String classId = classifier.getClassIdentity(event);
+				newTrace.add(classId);
+			}
+			result.incTraceFreq(newTrace);
+		}
+		return result;
+	}
+	
+	public void runLogStatsOnly() {
+		String runId = "logstats" + ClockUtil.dateTime();
+		RunStats runStats = new RunStats(buildVersion, logFileName, runId);
+		try {
+			TaskStats stats = makeNewTask(runStats, "spmlogparser");
+			XLog log = loadLog(logFileName, stats);
+			stats = makeNewTask(runStats, "logstats");
+			TraceFreq tf = calculateForLog(log,classifier);
+			LOGGER.info("Trace variants: {}", tf.keySet().size());
+			runStatsExporter.exportRun(runStats);
+		} catch (Exception e) {
+			closeRunWithError(runStats, e);
+			throw new ExperimentRunException(e);
+		}
+		closeRun(runStats);
+	}
+	
 	public void runExperiment() throws Exception {
 		LOGGER.info("SPM dimensions experiment runner initializing");
 		configure();
@@ -532,6 +572,9 @@ public class ExperimentRunner {
 			break;
 		case GENETIC_MINER:
 			runGeneticMiner();
+			break;
+		case LOG_STATS_ONLY:
+			runLogStatsOnly();
 			break;
 		default:
 			LOGGER.warn("No support for setting:" + runType);

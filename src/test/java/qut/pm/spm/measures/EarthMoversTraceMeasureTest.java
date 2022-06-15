@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.playout.StochasticPlayoutGenerator;
 import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
 public class EarthMoversTraceMeasureTest {
@@ -31,9 +32,19 @@ public class EarthMoversTraceMeasureTest {
 		XLog log = converter.convertTextArgs("b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
+		StochasticPlayoutGenerator generator = new StochasticPlayoutGenerator(log.size());
+		measure = new EarthMoversTraceMeasure(generator);
 		assertEquals(0.0d, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
 	}
 
+	@Test
+	public void zeroOverlapWithScaling() {
+		XLog log = converter.convertTextArgs("b","b","b");
+		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
+			 	  "Start -> {a 2.0} -> End");
+		assertEquals(0.0d, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
+	}
+	
 	@Test
 	public void perfectOverlap() {
 		XLog log = converter.convertTextArgs("a","b c");

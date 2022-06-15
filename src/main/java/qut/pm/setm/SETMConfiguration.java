@@ -41,6 +41,8 @@ import qut.pm.spm.measures.StochasticLogCachingMeasure;
 import qut.pm.spm.measures.TraceEntropyFitness;
 import qut.pm.spm.measures.TraceEntropyMeasure;
 import qut.pm.spm.measures.TraceEntropyPrecision;
+import qut.pm.spm.measures.TraceEntropyProjectFitness;
+import qut.pm.spm.measures.TraceEntropyProjectPrecision;
 import qut.pm.spm.measures.TraceOverlapRatioMeasure;
 import qut.pm.spm.measures.TraceProbabilityMassOverlap;
 import qut.pm.spm.measures.TraceRatioMeasure;
@@ -71,6 +73,7 @@ public class SETMConfiguration {
 	public static final String CONFIG_SETM_CROSSOVER_CHANCE		= "mr.setm.crossover.chance";
 	public static final String CONFIG_SETM_TARGET_FITNESS		= "mr.setm.target.fitness";		
 	public static final String CONFIG_CALCULATORS				= "mr.calculators";
+	public static final String CONFIG_PLAYOUT_GRANULARITY 				= "mr.playout.granularity";
 
 
 	public SETMConfigParams configureFromProperties(Properties cfg) {
@@ -82,6 +85,7 @@ public class SETMConfiguration {
 			result.eliteSize = (int) (result.popSize * .3);
 		result.crossOverChance = Double.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_SETM_CROSSOVER_CHANCE,"0.1"));
 		result.targetFitness = Double.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_SETM_TARGET_FITNESS,"1.0"));
+		result.playoutGranularity = Long.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_PLAYOUT_GRANULARITY,"1000") );
 		String seedCfg = cfg.getProperty(SETMConfiguration.CONFIG_RANDOM_SEED,"");
 		if (!seedCfg.equals(""))
 			result.seed = Integer.valueOf(seedCfg);
@@ -102,7 +106,9 @@ public class SETMConfiguration {
 		return activities;
 	}
 
-	protected void addMeasure(XLog log, SETMConfigParams cp, LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg, MeasureEvaluatorFactory mef, StochasticLogCachingMeasure measure) {
+	protected void addMeasure(XLog log, SETMConfigParams cp, LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg, 
+							 MeasureEvaluatorFactory mef, StochasticLogCachingMeasure measure) 
+	{
 		FitnessEvaluator<ProbProcessTree> newEval = 
 				mef.createEvaluator(measure, log, cp.classifier.getEventClassifier());
 		alg.put( newEval, 1.0 );
@@ -114,16 +120,17 @@ public class SETMConfiguration {
 		LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg = new LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double>();
 		
 		MeasureEvaluatorFactory mef = new MeasureEvaluatorFactory(exportObserver);
-		CachingPlayoutGenerator generator = new CachingPlayoutGenerator();
+		CachingPlayoutGenerator generator = new CachingPlayoutGenerator( cp.playoutGranularity );
 		addMeasure(log, cp, alg, mef, new EventRatioMeasure(generator));
 		addMeasure(log, cp, alg, mef, new TraceRatioMeasure(generator,2));
 		addMeasure(log, cp, alg, mef, new TraceRatioMeasure(generator,3));
 		addMeasure(log, cp, alg, mef, new TraceRatioMeasure(generator,4));
 		addMeasure(log, cp, alg, mef, new EarthMoversTraceMeasure(generator));
 		TraceEntropyMeasure tem = new TraceEntropyMeasure(generator);
-		addMeasure(log, cp, alg, mef, tem);
 		addMeasure(log, cp, alg, mef, new TraceEntropyPrecision(tem));
 		addMeasure(log, cp, alg, mef, new TraceEntropyFitness(tem));
+		addMeasure(log, cp, alg, mef, new TraceEntropyProjectFitness(tem));
+		addMeasure(log, cp, alg, mef, new TraceEntropyProjectPrecision(tem));
 		addMeasure(log, cp, alg, mef, new TraceOverlapRatioMeasure(generator));
 		addMeasure(log, cp, alg, mef, new TraceProbabilityMassOverlap(generator));
 		addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,1));
@@ -134,12 +141,6 @@ public class SETMConfiguration {
 		addMeasure(log, cp, alg, mef, new SimplicityEdgeCountMeasure(statsCache));
 		addMeasure(log, cp, alg, mef, new SimplicityEntityCountMeasure(statsCache));
 		addMeasure(log, cp, alg, mef, new SimplicityStructuralStochasticUniqMeasure(statsCache));
-		// pptMeasures = new ArrayList<>();
-		// pptMeasures.add(new ProbProcessTreeDeterminismMeasure());
-		// Reporting only
-		// addMeasure(new EntityCount());
-		// addMeasure(new EdgeCount());
-		// addMeasure(new StochasticStructuralUniqueness());
 		return alg;
 	}
 
@@ -161,10 +162,6 @@ public class SETMConfiguration {
 		ArrayList<EvolutionaryOperator<ProbProcessTree>> evolutionaryOperators = new ArrayList<EvolutionaryOperator<ProbProcessTree>>();
 	
 		LinkedHashMap<TreeMutationAbstract, Double> dumbMutators = new LinkedHashMap<TreeMutationAbstract, Double>();
-		// Original list
-		// dumbMutators.put(new RemoveSubtreeRandom(registry), 1.);
-		// dumbMutators.put(new NormalizationMutation(registry), 1.);
-		// dumbMutators.put(new ShuffleCluster(registry), 1.);
 		dumbMutators.put(new AddNodeRandom(registry), 1d);
 		dumbMutators.put(new MutateSingleNodeRandom(registry), 1d);
 		dumbMutators.put(new RemoveSubtreeRandom(registry), 1d );
@@ -174,7 +171,6 @@ public class SETMConfiguration {
 		//Dumb only
 		evolutionaryOperators.add(new TreeCrossover<ProbProcessTree>(1, new Probability(cp.crossOverChance),registry));
 	
-		//dumbMutators.put(new ReplaceTreeMutation(registry), 1.);
 		evolutionaryOperators.add(dumbCoordinator);
 	
 		List<String> activities = initActivities(cp, log);

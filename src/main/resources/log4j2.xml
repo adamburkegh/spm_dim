@@ -15,7 +15,7 @@
     <!-- Root level="debug" -->
     <Logger name="qut.pm.spm.playout.StochasticPlayoutGenerator" level="info"   />
     <Logger name="qut.pm.spm.playout.CachingPlayoutGenerator" level="info"   />
-    <Logger name="qut.pm.setm.observer" level="debug"   />
+    <!-- Logger name="qut.pm.setm.observer" level="debug"   / -->
     <Logger name="qut.pm.setm.RandomProbProcessTreeGenerator" level="info"   />
     <Logger name="qut.pm.setm.engines.ProbProcessTreeEvolutionEngine" level="info"   />
     <Root level="info">

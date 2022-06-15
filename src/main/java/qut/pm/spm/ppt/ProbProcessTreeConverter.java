@@ -75,7 +75,7 @@ public class ProbProcessTreeConverter {
 			convertConc(ppt,net,localStart,localEnd);
 			break;
 		case PROBLOOP:
-			convertLoop(ppt,net,localStart,localEnd);
+			convertLoop((PPTLoopNode) ppt,net,localStart,localEnd);
 			break;
 		case SEQUENCE:
 			convertSeq(ppt,net,localStart,localEnd);
@@ -125,20 +125,23 @@ public class ProbProcessTreeConverter {
 		}
 	}
 
-	private void convertLoop(ProbProcessTreeNode ppt, StochasticNet net, Place localStart, Place localEnd) {
+	private void convertLoop(PPTLoopNode ppt, StochasticNet net, Place localStart, Place localEnd) {
 		TimedTransition tenter = net.addImmediateTransition(TAU + "lin",ppt.getWeight());
 		tenter.setInvisible(true);
-		TimedTransition texit = net.addImmediateTransition(TAU + "lexit",1.0d);
+		TimedTransition texit = net.addImmediateTransition(TAU + "lexit",
+														ppt.getWeight() / ppt.getLoopRepetitions());
 		texit.setInvisible(true);
 		Place midloop = net.addPlace("midloop");
 		net.addArc(localStart,tenter);
 		net.addArc(tenter,midloop);
 		net.addArc(midloop,texit);
 		net.addArc(texit,localEnd);
-		ProbProcessTree loopChild = ppt.getChildren().get(0);
+		
+		ProbProcessTree loopChild = 
+				ProbProcessTreeProjector.rescale(ppt.getChildren().get(0),
+						(ppt.getLoopRepetitions() -1 ) / ppt.getLoopRepetitions());
 		convert(loopChild, net, midloop, midloop);
 	}
-
 
 	
 }

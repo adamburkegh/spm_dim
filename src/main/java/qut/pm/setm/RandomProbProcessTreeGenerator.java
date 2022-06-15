@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
 
-import qut.pm.spm.ppt.ProbProcessTreeProjector;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.ppt.PPTOperator;
 import qut.pm.spm.ppt.ProbProcessTree;
@@ -18,6 +17,7 @@ import qut.pm.spm.ppt.ProbProcessTreeCheck;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
 import qut.pm.spm.ppt.ProbProcessTreeFactory;
 import qut.pm.spm.ppt.ProbProcessTreeNode;
+import qut.pm.spm.ppt.ProbProcessTreeProjector;
 import qut.pm.util.ClockUtil;
 
 
@@ -86,6 +86,7 @@ public class RandomProbProcessTreeGenerator {
 			}
 			i++;
 			result.add(tree);
+			LOGGER.info("Randomly generated " + i + " trees");
 		}
 		return result;
 	}
@@ -93,8 +94,9 @@ public class RandomProbProcessTreeGenerator {
 	public ProbProcessTree generateTree(List<String> activities) {
 		ProbProcessTree result = null;
 		Set<String> activitiesCovered = new HashSet<String>();
+		LOGGER.info("Randomly generating tree");
 		while ( activitiesCovered.size() != activities.size() ) {
-			LOGGER.debug("Coverage ... " + activitiesCovered);
+			LOGGER.debug("Coverage ... {} ",activitiesCovered );
 			ProbProcessTree next = generatePotentiallyIncompleteTree(activities, maxDepth);
 			if (result == null) {
 				result = next;
@@ -123,7 +125,7 @@ public class RandomProbProcessTreeGenerator {
 		if (nextNodeType < OPERATOR_VALUES.length) {
 			generatorOperatorNode(activities, OPERATOR_VALUES[nextNodeType], (ProbProcessTreeNode)next, maxDepth);
 		}
-		LOGGER.debug("Generated " + next);
+		LOGGER.debug("Generated {}", next);
 		return next;
 	}
 
@@ -169,7 +171,15 @@ public class RandomProbProcessTreeGenerator {
 		ProbProcessTree next; 
 		if (nextNodeType < OPERATOR_VALUES.length) {
 			PPTOperator operator = OPERATOR_VALUES[nextNodeType];
-			next = ProbProcessTreeFactory.createNode(operator);
+			switch(operator) {
+			case PROBLOOP:
+				next = ProbProcessTreeFactory.createLoop(2.0);
+				break;
+			default:
+				next = ProbProcessTreeFactory.createNode(operator);
+				break;
+			}
+
 		}else {
 			if (nextNodeType == OPERATOR_VALUES.length) {
 				next = ProbProcessTreeFactory.createSilent(1.0d);

@@ -6,6 +6,7 @@ import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 import qut.pm.spm.playout.StochasticPlayoutGenerator;
 
@@ -18,7 +19,7 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 	protected XEventClassifier classifier;
 	
 	protected PlayoutGenerator generator;
-	protected XLog playoutLog;
+	protected TraceFreq playoutLog; // TODO concurrency risk
 
 	public AbstractStochasticLogCachingMeasure(PlayoutGenerator generator) {
 		this.generator = generator;
@@ -28,22 +29,30 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 		this.generator = new StochasticPlayoutGenerator();
 	}
 	
-	protected void validateLogCache(XLog log, XEventClassifier classifier) {
+	/**
+	 * 
+	 * @param log
+	 * @param classifier
+	 * @return whether cached value was used
+	 */
+	protected boolean validateLogCache(XLog log, XEventClassifier classifier) {
 		if (this.log == log && this.classifier == classifier)
-			return;
+			return true;
 		this.log = log;
 		this.classifier = classifier;
+		return false;
 	}
 
 	public double calculate(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		LOGGER.debug("Calculating ...");
 		precalculateForLog(log,classifier);
 		int traceCt = log.size();
-		playoutLog = generator.buildPlayoutLog(net,traceCt);
-		return calculateForPlayout(playoutLog,classifier);
+		playoutLog = generator.buildPlayoutTraceFreq(net);
+		playoutLog = generator.scaleTo(playoutLog,traceCt);
+		return calculateForPlayout(playoutLog);
 	}
 
-	protected abstract double calculateForPlayout(XLog playoutLog, XEventClassifier classifier);
-
+	protected abstract double calculateForPlayout(TraceFreq playoutLog);
+	
 
 }

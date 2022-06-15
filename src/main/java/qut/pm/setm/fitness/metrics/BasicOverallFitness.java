@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.uncommons.watchmaker.framework.FitnessEvaluator;
 
 import qut.pm.spm.ppt.ProbProcessTree;
+import qut.pm.spm.ppt.ProbProcessTreeFormatter;
 import qut.pm.spm.ppt.ProcessTreeConsistencyException;
 
 /**
@@ -61,7 +62,14 @@ public class BasicOverallFitness implements FitnessEvaluator<ProbProcessTree> {
 		for (FitnessEvaluator<ProbProcessTree> evaluator: evaluators.keySet()) {
 			Double evalWeight = evaluators.get(evaluator);
 			try {
-				result += evaluator.getFitness(candidate,population) * evalWeight ;
+				 double evRes = evaluator.getFitness(candidate,population) * evalWeight ;
+				 if (evRes < 0 || evRes > 1) {
+					 LOGGER.error("Measure out of [0,1] bounds. mu = " + evRes + " for " 
+							 		+ evaluator + "\n" 
+							 		+ new ProbProcessTreeFormatter().textTree(candidate) 
+							 		+ "\n");
+				 }
+				 result += evRes;
 			}catch(ProcessTreeConsistencyException ptce) {
 				LOGGER.error("Inconsistent tree; fitness = 0" + candidate);
 				return 0;

@@ -11,6 +11,7 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class TraceOverlapRatioMeasure extends AbstractStochasticLogCachingMeasure {
@@ -60,8 +61,8 @@ public class TraceOverlapRatioMeasure extends AbstractStochasticLogCachingMeasur
 	}
 
 	@Override
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelTraceFreq = calculateForLog(playoutLog,classifier);
+	protected double calculateForPlayout(TraceFreq playoutLog) {
+		modelTraceFreq = playoutLog;
 		TraceFreq intf = intersect(logTraceFreq,modelTraceFreq);
 		return ((double)intf.getTraceTotal()) / ((double)logTraceFreq.getTraceTotal()); 
 	}
@@ -72,8 +73,8 @@ public class TraceOverlapRatioMeasure extends AbstractStochasticLogCachingMeasur
 		Set<List<String>> keys = new HashSet<>(traceFreq1.keySet());
 		keys.addAll(traceFreq2.keySet());
 		for (List<String> trace : keys ) {
-			long t1 = traceFreq1.getFreq(trace);
-			long t2 = traceFreq2.getFreq(trace);
+			double t1 = traceFreq1.getFreq(trace);
+			double t2 = traceFreq2.getFreq(trace);
 			result.putFreq(trace, Math.min(t1,t2));
 		}
 		return result;

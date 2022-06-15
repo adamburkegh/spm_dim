@@ -1,6 +1,6 @@
 package qut.pm.spm.measures;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XLog;
@@ -9,6 +9,9 @@ import org.junit.Test;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.ppt.ProbProcessTreeConverter;
+import qut.pm.spm.ppt.ProbProcessTreeFactory;
+import qut.pm.spm.ppt.ProbProcessTreeNode;
 import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
 public class EventRatioMeasureTest {
@@ -80,6 +83,38 @@ public class EventRatioMeasureTest {
 		assertMeasureEquals(0.55556, log,net);
 	}
 
+	@Test
+	public void zeroSETMPPTEg() {
+		ProbProcessTreeNode ppt = ProbProcessTreeFactory.createChoice();
+		ProbProcessTreeNode pptChoice1 = ProbProcessTreeFactory.createChoice();
+		ProbProcessTreeNode pptChoice2 = ProbProcessTreeFactory.createChoice();
+		ProbProcessTreeNode pptChoice3 = ProbProcessTreeFactory.createChoice();
+		pptChoice3.addChild( ProbProcessTreeFactory.createLeaf("Completed",1.0d) );
+		pptChoice3.addChild( ProbProcessTreeFactory.createSilent(1.0d) );
+		pptChoice2.addChild( pptChoice3 );
+		pptChoice2.addChild( ProbProcessTreeFactory.createLeaf("Accepted", 1.0d) );
+		ProbProcessTreeNode pptConc1 = ProbProcessTreeFactory.createConcurrency();
+		pptConc1.addChild( ProbProcessTreeFactory.createLeaf("Unmatched",1.0d)  );
+		pptChoice1.addChild( pptChoice2 );
+		pptChoice1.addChild( pptConc1 );
+		ProbProcessTreeNode pptSeq1= ProbProcessTreeFactory.createSequence();
+		ProbProcessTreeNode pptLoop1 = ProbProcessTreeFactory.createLoop(2.0d);
+		ProbProcessTreeNode pptLoop2 = ProbProcessTreeFactory.createLoop(2.0d);
+		pptLoop2.addChild( ProbProcessTreeFactory.createLeaf("Queued", 1.0d ) ) ;
+		pptLoop1.addChild(pptLoop2);
+		pptSeq1.addChild (  ProbProcessTreeFactory.createLeaf("Queued", 1.0d ));
+		pptSeq1.addChild (  pptLoop1 );
+		pptSeq1.addChild (  ProbProcessTreeFactory.createLeaf("Unmatched", 1.0d ));
+		ppt.addChild(  pptChoice1 );
+		ppt.addChild(  pptSeq1 );
+		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
+		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
+		XLog log = converter.convertTextArgs("Queued","Completed","Unmatched",
+											 "Queued","Completed","Unmatched",
+											 "Queued","Completed","Unmatched");
+		assertMeasureEquals(0.6244d, log, snet);
+	}
+	
 	private void assertMeasureEquals(double expected, XLog log, AcceptingStochasticNet net) {
 		assertEquals(expected, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
 	}

@@ -3,6 +3,8 @@ package qut.pm.spm.playout;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.classification.XEventNameClassifier;
 import org.deckfour.xes.model.XEvent;
@@ -16,6 +18,7 @@ import com.google.common.collect.TreeMultiset;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.TraceFreq;
 import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
 public class StochasticPlayoutGeneratorTest {
@@ -304,7 +307,7 @@ public class StochasticPlayoutGeneratorTest {
 	
 	@Test
 	public void maxTraceTriggered() {
-		generator = new StochasticPlayoutGenerator(10);
+		generator = new StochasticPlayoutGenerator(10,1000);
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 				"Start -> {D 1.0} -> End");
 		parser.addToAcceptingNet(net, 
@@ -316,6 +319,19 @@ public class StochasticPlayoutGeneratorTest {
 												   "B E C C C C C C C","B E C C C C C C C",
 												   "B E C C C C C C C","B E C C C C C C C");
 		assertLogEquals(log, expected1);
+	}
+	
+	@Test
+	public void traceFreqGen() {
+		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
+					  "Start -> {a 2.0} -> p1 -> {b 2.0} -> p2 -> {c 2.0} -> End");
+		parser.addToAcceptingNet(net, 
+					  "Start -> {a 2.0} -> p1 -> {d 1.0} -> p3 -> {e 2.0} -> End");
+		TraceFreq tf = generator.buildPlayoutTraceFreq(net,6);
+		TraceFreq tfExpected = new TraceFreq();
+		tfExpected.putFreq( Arrays.asList(new String[]{"a","b","c"}) ,4);
+		tfExpected.putFreq( Arrays.asList(new String[]{"a","d","e"}) ,2);
+		assertEquals(tfExpected,tf);
 	}
 	
 }

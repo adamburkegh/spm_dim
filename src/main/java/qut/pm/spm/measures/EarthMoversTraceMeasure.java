@@ -5,16 +5,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.TraceFreq;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure {
 
+	private static Logger LOGGER = LogManager.getLogger();
+	
+	private static final double EPSILON = 0.0001;
 	protected TraceFreq logTraceFreq;
 	protected TraceFreq modelTraceFreq;
 	
@@ -60,8 +66,8 @@ public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure
 	}
 
 	@Override
-	protected double calculateForPlayout(XLog playoutLog, XEventClassifier classifier) {
-		modelTraceFreq = calculateForLog(playoutLog,classifier);
+	protected double calculateForPlayout(TraceFreq playoutLog) {
+		modelTraceFreq = playoutLog;
 		return emcalc(logTraceFreq,modelTraceFreq);
 	}
 
@@ -78,6 +84,10 @@ public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure
 			if (dist > 0)
 				sigma += dist;
 		}
+		if (sigma > 1.0d + EPSILON)
+			LOGGER.error("EarthMoversTrace sum component > 1");
+		if (sigma > 1.0d)
+			return 0.0d;
 		return 1.0d - sigma;
 	}
 
