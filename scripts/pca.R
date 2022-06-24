@@ -308,7 +308,7 @@ postfig()
 
 
 # Exclude very highly correlated columns
-rdo <- rd %>% 
+rdo <- rundata %>% 
 # filter ( Log == 'BPIC2013 closed' || Log == 'BPIC2013 incidents'
 #                        || Log == 'BPIC2018 control' || 'BPIC2018 reference'
 #				|| Log == 'Sepsis' ) %>%
@@ -419,7 +419,7 @@ if (ellipsePlot){
 		 	addEllipses=TRUE, ellipse.level=0.95,
 		 	habillage = rdo$Log
             	 ) +   
-		labs(title ="", x = "Adhesion", y = "Simplicity") )
+		labs(title ="", x = "PCA1 (Adhesion)", y = "PCA2 (Simplicity)") )
 	postfig()
 	prepfig("pcaellipsedc",ctlogns)
 	print(
@@ -429,7 +429,7 @@ if (ellipsePlot){
 	               addEllipses=TRUE, ellipse.level=0.95,
 	               habillage = rdo$gtype
 	  ) +   
-	    labs(title ="", x = "Adhesion", y = "Simplicity") )
+	    labs(title ="", x = "PCA1 (Adhesion)", y = "PCA2 (Simplicity)") )
 	postfig()
 	
 }
@@ -492,8 +492,26 @@ if (nfactors == 4){
 }
 
 if ( nfactors == 3 ){
-  colnames(pvc2) <- c("Adhesion","Simplicity","Entropy")
-  colnames(pvct) <- c("Adhesion","Simplicity","Entropy")
+  cn3 <- c("Adhesion\n(PCA1)","Simplicity\n(PCA2)","Entropy\n(PCA3)")
+  colnames(pvc2) <- cn3
+  colnames(pvct) <- cn3
+  rnct <- rownames(pvct)
+  rnct[1] <- c("Activity Ratio Gower (ARG)")
+  rnct[2] <- c("Trace Ratio Gower 2 (TRG2)")
+  rnct[3] <- c("Trace Ratio Gower 3 (TRG3)")
+  rnct[4] <- c("Trace Ratio Gower 4 (TRG4)")
+  rnct[5] <- c("Structural Simplicity incl. stochastic (SSS)")
+  rnct[6] <- c("Structural Simplicity by entity count (SSENC)")
+  rnct[7] <- c("Structural Simplicity by edge count  (SSEDC)")
+  rnct[8] <- c("Generalization by trace uniqueness (TGDU)")
+  rnct[9] <- c("Earth Movers With Play-out Trace (EMT)")
+  rnct[10] <- c("Trace Probability Mass Overlap (TMO)")
+  rnct[11] <- c("Play-out Entropy Intersection Precision (HIPT)")
+  rnct[12] <- c("Play-out Entropy Intersection Fitness (HIFT)")
+  rnct[13] <- c("Play-out Entropy Project Precision (HJPT)")
+  rnct[14] <- c("Generalization by Trace Floor count 5 (TGF5)")
+  rnct[15] <- c("Play-out Entropy Project Fitness (HJFT)")
+  rownames(pvct) <- rnct
 }
 
 

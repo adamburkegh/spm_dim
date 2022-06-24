@@ -33,9 +33,9 @@ postfig <- function()
 }
 
 corheatmap <- function(pcain,mname,source,
-		 		dimlabels=c("Adhesion","Precision","Simplicity","Trace Profile"))
+		 		dimlabels=c("Adhesion","Precision","Simplicity","Trace Profile") )
 {
-      pcv <- get_pca_var(pcain)
+  pcv <- get_pca_var(pcain)
 	# pci <- get_pca_ind(pcain)
 
 	pv <- pcv$contrib[,1:nfactors]
@@ -58,6 +58,36 @@ corheatmap <- function(pcain,mname,source,
 		  # main=paste(source,"cos^2"))
 	postfig()
 }
+
+corheatmaprowlabel <- function(pcain,mname,source,
+                              dimlabels, rowlabels )
+{
+  pcv <- get_pca_var(pcain)
+  # pci <- get_pca_ind(pcain)
+  
+  pv <- pcv$contrib[,1:nfactors]
+  colnames(pv) <- dimlabels
+  rlbackup <- rownames(pv)
+  rownames(pv) <- rowlabels
+  
+  prepfig("hmevalcont", mname)
+  col= colorRampPalette(brewer.pal(8, "Blues"))(25)
+  heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+          cexRow = 1.0, cexCol = 1.5 )
+  # main=paste(source,"contributions") )
+  postfig()
+  
+  pv <- pcv$cos2[,1:nfactors]
+  colnames(pv) <- dimlabels
+  
+  prepfig("hmevalcos2",mname)
+  col= colorRampPalette(brewer.pal(8, "Blues"))(25)
+  heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+          cexRow = 1.0, cexCol = 1.5 )
+  # main=paste(source,"cos^2"))
+  postfig()
+}
+
 
 
 
@@ -100,7 +130,8 @@ rundata$ENTROPY_PRECISION_TRACEPROJECT <- ifelse(rundata$ENTROPY_PRECISION_TRACE
 rundata$ENTROPY_FITNESS_TRACEPROJECT <- ifelse(rundata$ENTROPY_FITNESS_TRACEPROJECT == "-0.0", 0, 
                                                  rundata$ENTROPY_FITNESS_TRACEPROJECT)
 
-rundata <- rename(rundata,ACTIVITY_RATIO_GOWER=EVENT_RATIO_GOWER)
+rundata <- rename(rundata,ACTIVITY_RATIO_GOWER=EVENT_RATIO_GOWER,
+                          EARTH_MOVERS=EARTH_MOVERS_LIGHT_COVERAGE)
 
 gt <- rundata %>% 
   select(Artifact.Creator) %>% 
@@ -147,24 +178,24 @@ lrdo <- rundata %>% select (# Model.Run,
 				  ENTROPY_PRECISION_TRACEPROJECT,
 				  ENTROPY_FITNESS_TRACEPROJECT,
 				  TRACE_GENERALIZATION_FLOOR_10,
-				  TRACE_GENERALIZATION_FLOOR_1,
 				  TRACE_GENERALIZATION_FLOOR_5,				  
-				  EARTH_MOVERS_LIGHT_COVERAGE
+				  TRACE_GENERALIZATION_FLOOR_1,
+				  EARTH_MOVERS
 				)
 
 rdo <- lrdo %>% select (-Log.Trace.Count,-Log.Event.Count)
 
-rdearth <- rdo %>% filter ( !is.na(EARTH_MOVERS_LIGHT_COVERAGE ) ) %>%
+rdearth <- rdo %>% filter ( !is.na(EARTH_MOVERS ) ) %>%
 		       select (-ENTROPY_PRECISION,-ENTROPY_RECALL)
 
 rdent <- rdo %>% filter ( !is.na(ENTROPY_PRECISION) ) %>%
-		       select (-EARTH_MOVERS_LIGHT_COVERAGE)
+		       select (-EARTH_MOVERS)
 
 rdee <- rdo %>% filter (!is.na(ENTROPY_PRECISION) ) %>% 
-		    filter (!is.na(EARTH_MOVERS_LIGHT_COVERAGE))
+		    filter (!is.na(EARTH_MOVERS))
 
 ldee <- lrdo %>% filter (!is.na(ENTROPY_PRECISION) ) %>% 
-                 filter (!is.na(EARTH_MOVERS_LIGHT_COVERAGE))
+                 filter (!is.na(EARTH_MOVERS))
 
 logshortname <- rename(ldee,
                        LTC = Log.Trace.Count,
@@ -172,7 +203,7 @@ logshortname <- rename(ldee,
                        TOR = TRACE_OVERLAP_RATIO ,
                        TMO = TRACE_PROBMASS_OVERLAP,
                        EMT = EARTH_MOVERS_TRACEWISE,
-                       EM = EARTH_MOVERS_LIGHT_COVERAGE,
+                       EM = EARTH_MOVERS,
                        ARG = ACTIVITY_RATIO_GOWER,
                        TRG2 = TRACE_RATIO_GOWER_2,
                        TRG3 = TRACE_RATIO_GOWER_3,
@@ -195,7 +226,7 @@ emshortname <- rename(rdearth,
 				  TOR = TRACE_OVERLAP_RATIO ,
 				  TMO = TRACE_PROBMASS_OVERLAP,
 				  EMT = EARTH_MOVERS_TRACEWISE,
-				  EM = EARTH_MOVERS_LIGHT_COVERAGE,
+				  EM = EARTH_MOVERS,
 			     ARG = ACTIVITY_RATIO_GOWER,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
@@ -225,7 +256,7 @@ postfig()
 
 
 rdent <- rdo %>% filter ( !is.na(ENTROPY_PRECISION) ) %>%
-		       select (-EARTH_MOVERS_LIGHT_COVERAGE)
+		       select (-EARTH_MOVERS)
 
 entshortname <- rename(rdent, 
 				  TOR = TRACE_OVERLAP_RATIO ,
@@ -254,7 +285,7 @@ eeshortname <- rename(rdee,
 				  TOR = TRACE_OVERLAP_RATIO ,
 				  TMO = TRACE_PROBMASS_OVERLAP,
 				  EMT = EARTH_MOVERS_TRACEWISE,
-				  EM = EARTH_MOVERS_LIGHT_COVERAGE,
+				  EM = EARTH_MOVERS,
 			        ARG = ACTIVITY_RATIO_GOWER,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
@@ -359,7 +390,7 @@ heatmap(var, Colv = NA, Rowv = NA,margins=c(10,21), col= col)
 
 
 if (nfactors == 3){
-  dlabels <- c("Adhesion","Entropy","Simplicity")
+  dlabels <- c("Adhesion\n(PCA1)","Entropy\n(PCA2)","Simplicity\n(PCA3)")
 }
 if (nfactors == 4){
   dlabels <- c("Adhesion","Entropy","Simplicity","Subtraceability")
@@ -371,11 +402,33 @@ if (nfactors == 6){
   dlabels <- c("Thingy","Simplicity","FT1","ST1","ST2","Adhesion")
 }
 
+rlabels <- c(21)
+rlabels[1] <- c("Trace Overlap Ratio (TOR)")
+rlabels[2] <- c("Trace Probability Mass Overlap (TMO)")
+rlabels[3] <- c("Generalization by trace uniqueness (TGDU)")
+rlabels[4] <- c("Earth Movers With Play-out Trace (EMT)")
+rlabels[5] <- c("Structural Simplicity incl. stochastic (SSS)")
+rlabels[6] <- c("Structural Simplicity by entity count (SSENC)")
+rlabels[7] <- c("Structural Simplicity by edge count  (SSEDC)")
+rlabels[8] <- c("Entropy Recall (H_F)")
+rlabels[9] <- c("Play-out Entropy Intersection Precision (HIPT)")
+rlabels[10] <- c("Entropy Precision (H_P)")
+rlabels[11] <- c("Trace Ratio Gower 4 (TRG4)")
+rlabels[12] <- c("Trace Ratio Gower 3 (TRG3)")
+rlabels[13] <- c("Trace Ratio Gower 2 (TRG2)")
+rlabels[14] <- c("Activity Ratio Gower (ARG)")
+rlabels[15] <- c("Play-out Entropy Intersection Fitness (HIFT)")
+rlabels[16] <- c("Play-out Entropy Project Precision (HJPT)")
+rlabels[17] <- c("Play-out Entropy Project Fitness (HJFT)")
+rlabels[18] <- c("Generalization by Trace Floor count 10 (TGF10)")
+rlabels[19] <- c("Generalization by Trace Floor count 5 (TGF5)")
+rlabels[20] <- c("Generalization by Trace Floor count 1 (TGF1)")
+rlabels[21] <- c("Earth Movers truncated (tEMSC0.8)")
 
 corheatmap(pcaearth,"em","Earth Movers Eval" , dimlabels=dlabels)
 corheatmap(pcaent,"ent","Entropy Eval",  dimlabels=dlabels)
-corheatmap(pcaee,"eval","Eval", dimlabels=dlabels)
-
+#corheatmap(pcaee,"eval","Eval", dimlabels=dlabels)
+corheatmaprowlabel(pcaee,"eval","Eval", dimlabels=dlabels, rowlabels=rlabels)
 
 
 
