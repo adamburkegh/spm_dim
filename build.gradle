@@ -116,7 +116,7 @@ jar {
 
 
 group = 'qut.pm'
-version = '1.2.4'
+version = '1.2.5'
 description = 'spmdim'
 sourceCompatibility = '1.8'
 
