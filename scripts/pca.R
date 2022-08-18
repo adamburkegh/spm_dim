@@ -114,8 +114,17 @@ corheatmap <- function(pv,sel,main){
 	prepfig( paste("heatmap",main,sep=""),sel)
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
 	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
-	        cexRow = 1.0, cexCol = 1.5) #,
-		# main=paste(sel,main))
+	        cexRow = 1.0, #cexCol = 1.5,
+	        labCol="",
+	        add.expr = text(x = seq_along(colnames(pv)),
+	                        y=-1.0, srt=45, labels=colnames(pv), 
+	                        xpd=TRUE, cex=2.0) )
+	legend(x="bottomright", legend=c("min","mid","max"),
+	       fill=colorRampPalette(brewer.pal(8, "Blues"))(3),
+	       inset=c(0.17,0.10), bty="n" )
+	rect(xleft = 0.75, xright = 0.905, ybottom = 0.11, ytop = 0.31) 
+	text(x = 0.755, y = 0.25, adj = c(0,0),
+	     "Scaled contributions\nper component", cex=1.0 ) 
 	postfig()
 }
 
@@ -152,6 +161,8 @@ pfc <- function(msg){
     write_lines(" ",resfile,append=TRUE)
 }
 
+warning_handler <- function(c) cat("Found expected warning...\n")
+
 
 dev.off()
 dev.new()
@@ -169,6 +180,9 @@ rundata = read.csv( paste(workingPath,"hpc1.2.2.psv", sep=""),
 
 
 logstats <- read.csv( paste(resultsPath,"logstats.csv",sep=""))
+
+
+logstats <- subset(logstats, select=-c(Log.Trace.Variants))
 
 rundata <- merge(rundata,logstats)
 
@@ -250,7 +264,9 @@ fnumericcols <- c(			'Log.Trace.Count',
 rundata[,fnumericcols] <- sapply(rundata[,fnumericcols], as.numeric)
 
 pf("Data description before rescaling")
-rdd <- describe(rundata,type=2)
+withCallingHandlers(message = warning_handler, {
+  rdd <- describe(rundata,type=2)
+} )
 pfc(rdd)
 
 rdprescale <- rundata
@@ -263,7 +279,9 @@ rdprescale <- rundata
 #		      filter ( !grepl('rando',Artifact.Creator) ) %>%
 
 pf("Data description after filtering")
-rdd <- describe(rundata,type=2)
+withCallingHandlers(message = warning_handler, {
+  rdd <- describe(rundata,type=2)
+})
 pfc(rdd)
 
 
@@ -288,8 +306,8 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
                       TRG2 = TRACE_RATIO_GOWER_2,
                       TRG3 = TRACE_RATIO_GOWER_3,
                       TRG4 = TRACE_RATIO_GOWER_4,
-                      HPIT = ENTROPY_PRECISION_TRACEWISE,
-                      HFIT = ENTROPY_FITNESS_TRACEWISE,
+                      HIPT = ENTROPY_PRECISION_TRACEWISE,
+                      HIFT = ENTROPY_FITNESS_TRACEWISE,
                       SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
                       SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
                       SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
@@ -302,7 +320,8 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
 
 logcor <- cor(rdshortname)
 prepfig("corlog",ctlogns, width=30, height=30)
-corrplot(logcor, method="number")
+#corrplot(logcor, method="number")
+corrplot(logcor, method="circle")
 postfig()
 
 
@@ -367,9 +386,12 @@ rdnl <- rdnl %>%  select (
 				  ENTROPY_FITNESS_TRACEPROJECT)
 
 
+
 # Basic stats
 pf("Data description after rescaling and selection")
-rdd <- describe(rd,type=2,fast=T)
+withCallingHandlers(message = warning_handler, {
+  rdd <- describe(rd,type=2,fast=T)
+})
 pfc(rdd)
 
 
@@ -412,14 +434,16 @@ ellipsePlot <- TRUE
 
 if (ellipsePlot){
 	prepfig("pcaellipselog",ctlogns)
-	print(
+	pcalplot <- 
 	  fviz_pca_ind(pcares,
              	repel = FALSE,     # Avoid text overlapping
-		 	label = "none",
+		 	label = "",
 		 	addEllipses=TRUE, ellipse.level=0.95,
 		 	habillage = rdo$Log
             	 ) +   
-		labs(title ="", x = "PCA1 (Adhesion)", y = "PCA2 (Simplicity)") )
+		labs(title ="", x = "PCA1 (Adhesion)", y = "PCA2 (Simplicity)") +
+	  theme(legend.position = c(0.93, 0.1))
+	print(pcalplot)
 	postfig()
 	prepfig("pcaellipsedc",ctlogns)
 	print(
@@ -500,16 +524,16 @@ if ( nfactors == 3 ){
   rnct[2] <- c("Trace Ratio Gower 2 (TRG2)")
   rnct[3] <- c("Trace Ratio Gower 3 (TRG3)")
   rnct[4] <- c("Trace Ratio Gower 4 (TRG4)")
-  rnct[5] <- c("Structural Simplicity incl. stochastic (SSS)")
-  rnct[6] <- c("Structural Simplicity by entity count (SSENC)")
-  rnct[7] <- c("Structural Simplicity by edge count  (SSEDC)")
-  rnct[8] <- c("Generalization by trace uniqueness (TGDU)")
+  rnct[5] <- c("Structural Simplicity incl. Stochastic (SSS)")
+  rnct[6] <- c("Structural Simplicity by Entity Count (SSENC)")
+  rnct[7] <- c("Structural Simplicity by Edge Count  (SSEDC)")
+  rnct[8] <- c("Generalization by Trace Uniqueness (TGDU)")
   rnct[9] <- c("Earth Movers With Play-out Trace (EMT)")
   rnct[10] <- c("Trace Probability Mass Overlap (TMO)")
   rnct[11] <- c("Play-out Entropy Intersection Precision (HIPT)")
   rnct[12] <- c("Play-out Entropy Intersection Fitness (HIFT)")
   rnct[13] <- c("Play-out Entropy Project Precision (HJPT)")
-  rnct[14] <- c("Generalization by Trace Floor count 5 (TGF5)")
+  rnct[14] <- c("Generalization by Trace Floor 5 (TGF5)")
   rnct[15] <- c("Play-out Entropy Project Fitness (HJFT)")
   rownames(pvct) <- rnct
 }

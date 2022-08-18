@@ -1,6 +1,10 @@
+library(readr)
 library(dplyr)
+library(tidyr)
 library(data.table)
+library(factoextra)
 library(corrplot)
+library(RColorBrewer)
 
 workingPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/var/"
 resultsPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/results/"
@@ -45,7 +49,6 @@ corheatmap <- function(pcain,mname,source,
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
 	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
 	    cexRow = 1.0, cexCol = 1.5 )
-		  # main=paste(source,"contributions") )
 	postfig()
 
 	pv <- pcv$cos2[,1:nfactors]
@@ -63,8 +66,7 @@ corheatmaprowlabel <- function(pcain,mname,source,
                               dimlabels, rowlabels )
 {
   pcv <- get_pca_var(pcain)
-  # pci <- get_pca_ind(pcain)
-  
+
   pv <- pcv$contrib[,1:nfactors]
   colnames(pv) <- dimlabels
   rlbackup <- rownames(pv)
@@ -72,8 +74,21 @@ corheatmaprowlabel <- function(pcain,mname,source,
   
   prepfig("hmevalcont", mname)
   col= colorRampPalette(brewer.pal(8, "Blues"))(25)
+  #heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
+  #        cexRow = 1.0, cexCol = 1.5 )
   heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
-          cexRow = 1.0, cexCol = 1.5 )
+          cexRow = 1.0, 
+          labCol="",
+          add.expr = text(x = seq_along(colnames(pv)),
+                          y=-1.5, srt=45, labels=colnames(pv), 
+                          xpd=TRUE, cex=2.0) )
+  legend(x="bottomright", legend=c("min","mid","max"),
+         fill=colorRampPalette(brewer.pal(8, "Blues"))(3),
+         inset=c(0.17,0.55), bty="n" )
+  rect(xleft = 0.75, xright = 0.905, ybottom = 0.56, ytop = 0.76) 
+  text(x = 0.755, y = 0.70, adj = c(0,0),
+       "Scaled contributions\nper component", cex=1.0 ) 
+  
   # main=paste(source,"contributions") )
   postfig()
   
@@ -103,6 +118,8 @@ nfactors <- 3
 scree <- TRUE
 
 matchSampleSizes <- TRUE
+
+scalepca <- TRUE
 
 dev.off()
 dev.new()
@@ -210,8 +227,8 @@ logshortname <- rename(ldee,
                        TRG4 = TRACE_RATIO_GOWER_4,
                        HP = ENTROPY_PRECISION,
                        HF  = ENTROPY_RECALL,
-                       HPIT = ENTROPY_PRECISION_TRACEWISE,
-                       HFIT = ENTROPY_FITNESS_TRACEWISE,
+                       HIPT = ENTROPY_PRECISION_TRACEWISE,
+                       HIFT = ENTROPY_FITNESS_TRACEWISE,
                        SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
                        SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
                        SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
@@ -231,8 +248,8 @@ emshortname <- rename(rdearth,
 				  TRG2 = TRACE_RATIO_GOWER_2,
 				  TRG3 = TRACE_RATIO_GOWER_3,
 				  TRG4 = TRACE_RATIO_GOWER_4,
-				  HPIT = ENTROPY_PRECISION_TRACEWISE,
-				  HFIT = ENTROPY_FITNESS_TRACEWISE,
+				  HIPT = ENTROPY_PRECISION_TRACEWISE,
+				  HIFT = ENTROPY_FITNESS_TRACEWISE,
 				  SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
 			        SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
@@ -405,11 +422,11 @@ if (nfactors == 6){
 rlabels <- c(21)
 rlabels[1] <- c("Trace Overlap Ratio (TOR)")
 rlabels[2] <- c("Trace Probability Mass Overlap (TMO)")
-rlabels[3] <- c("Generalization by trace uniqueness (TGDU)")
+rlabels[3] <- c("Generalization by Trace Uniqueness (TGDU)")
 rlabels[4] <- c("Earth Movers With Play-out Trace (EMT)")
-rlabels[5] <- c("Structural Simplicity incl. stochastic (SSS)")
-rlabels[6] <- c("Structural Simplicity by entity count (SSENC)")
-rlabels[7] <- c("Structural Simplicity by edge count  (SSEDC)")
+rlabels[5] <- c("Structural Simplicity incl. Stochastic (SSS)")
+rlabels[6] <- c("Structural Simplicity by Entity Count (SSENC)")
+rlabels[7] <- c("Structural Simplicity by Edge Count  (SSEDC)")
 rlabels[8] <- c("Entropy Recall (H_F)")
 rlabels[9] <- c("Play-out Entropy Intersection Precision (HIPT)")
 rlabels[10] <- c("Entropy Precision (H_P)")
@@ -420,10 +437,10 @@ rlabels[14] <- c("Activity Ratio Gower (ARG)")
 rlabels[15] <- c("Play-out Entropy Intersection Fitness (HIFT)")
 rlabels[16] <- c("Play-out Entropy Project Precision (HJPT)")
 rlabels[17] <- c("Play-out Entropy Project Fitness (HJFT)")
-rlabels[18] <- c("Generalization by Trace Floor count 10 (TGF10)")
-rlabels[19] <- c("Generalization by Trace Floor count 5 (TGF5)")
-rlabels[20] <- c("Generalization by Trace Floor count 1 (TGF1)")
-rlabels[21] <- c("Earth Movers truncated (tEMSC0.8)")
+rlabels[18] <- c("Generalization by Trace Floor 10 (TGF10)")
+rlabels[19] <- c("Generalization by Trace Floor 5 (TGF5)")
+rlabels[20] <- c("Generalization by Trace Floor 1 (TGF1)")
+rlabels[21] <- c("Earth Movers Truncated (tEMSC0.8)")
 
 corheatmap(pcaearth,"em","Earth Movers Eval" , dimlabels=dlabels)
 corheatmap(pcaent,"ent","Entropy Eval",  dimlabels=dlabels)
