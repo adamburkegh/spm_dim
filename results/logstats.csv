@@ -1,6 +1,7 @@
-"Log","Log.Id","Log.Trace.Count","Log.Event.Count"
-"BPIC2013 closed",1,1487,6660
-"BPIC2013 incidents",2,7554,65533
-"BPIC2018 control",3,43808,161296
-"BPIC2018 reference",4,43802,128554
-"Sepsis",5,1054,15214
+"Log","Log.Id","Log.Trace.Count","Log.Event.Count","Log.Trace.Variants"
+"BPIC2013 closed",1,1487,6660,183
+"BPIC2013 incidents",2,7554,65533,1511
+"BPIC2018 control",3,43808,161296,59
+"BPIC2018 reference",4,43802,128554,515
+"Sepsis",5,1054,15214,846
+"Road Traffic Fines",6,150370,561470,231
