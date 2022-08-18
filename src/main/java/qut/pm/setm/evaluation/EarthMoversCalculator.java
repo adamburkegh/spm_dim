@@ -4,9 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XLog;
-import org.processmining.earthmoversstochasticconformancechecking.parameters.EMSCParametersDefault;
-import org.processmining.earthmoversstochasticconformancechecking.parameters.EMSCParametersLogModel;
-import org.processmining.earthmoversstochasticconformancechecking.parameters.EMSCParametersLogModelAbstract;
+import org.processmining.earthmoversstochasticconformancechecking.parameters.EMSCParametersLogModelDefault;
+import org.processmining.earthmoversstochasticconformancechecking.parameters.LanguageGenerationStrategyFromModelAbstract;
+import org.processmining.earthmoversstochasticconformancechecking.parameters.LanguageGenerationStrategyFromModelDefault;
 import org.processmining.earthmoversstochasticconformancechecking.plugins.EarthMoversStochasticConformancePlugin;
 import org.processmining.earthmoversstochasticconformancechecking.tracealignments.StochasticTraceAlignmentsLogModel;
 import org.processmining.framework.plugin.PluginContext;
@@ -18,18 +18,6 @@ import qut.pm.spm.Measure;
 
 public class EarthMoversCalculator implements SPNQualityCalculator {
 
-	private class EMSCParametersLogModelNoAlignments extends EMSCParametersLogModelAbstract {
-
-		public EMSCParametersLogModelNoAlignments(XEventClassifier classifier) {
-			super(EMSCParametersDefault.defaultDistanceMatrix, 
-					classifier,
-					EMSCParametersDefault.defaultTerminationStrategy, 
-					EMSCParametersDefault.defaultDebug, 
-					false);
-		}
-
-	}
-	
 	private static Logger LOGGER = LogManager.getLogger();
 
 	@Override
@@ -48,7 +36,12 @@ public class EarthMoversCalculator implements SPNQualityCalculator {
 			XEventClassifier classifier, TaskStats stats) throws Exception 
 	{
 		LOGGER.info("Computing earth-movers' distance (SL) ");
-		EMSCParametersLogModel parameters = new EMSCParametersLogModelNoAlignments(classifier);
+		EMSCParametersLogModelDefault parameters = new EMSCParametersLogModelDefault();
+		parameters.setComputeStochasticTraceAlignments(false);
+		parameters.setDebug(false);
+		parameters.setLogClassifier(classifier);
+		LanguageGenerationStrategyFromModelAbstract terminationStrategy = new LanguageGenerationStrategyFromModelDefault();
+		parameters.setModelTerminationStrategy(terminationStrategy);
 		
 		LOGGER.debug("Initial marking {}",net.getInitialMarking());
 		StochasticTraceAlignmentsLogModel stAlign = 
