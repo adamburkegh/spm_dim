@@ -320,8 +320,7 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
 
 logcor <- cor(rdshortname)
 prepfig("corlog",ctlogns, width=30, height=30)
-#corrplot(logcor, method="number")
-corrplot(logcor, method="circle")
+corrplot(logcor, method="circle", tl.cex=1.5, cl.cex=1.8)
 postfig()
 
 
