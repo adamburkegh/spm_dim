@@ -1,10 +1,10 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 public class EdgeCount implements StochasticLogCachingMeasure{
 
@@ -19,7 +19,7 @@ public class EdgeCount implements StochasticLogCachingMeasure{
 	}
 
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
 		return anet.getNet().getEdges().size();
 	}
 
@@ -29,7 +29,7 @@ public class EdgeCount implements StochasticLogCachingMeasure{
 	}
 
 	@Override
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		// No-op
 	}
 

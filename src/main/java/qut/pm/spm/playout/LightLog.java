@@ -3,8 +3,11 @@ package qut.pm.spm.playout;
 import java.util.Iterator;
 
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import com.google.common.collect.TreeMultiset;
 
+import qut.pm.spm.ActivityFreq;
+import qut.pm.spm.FiniteStochasticLang;
 import qut.pm.spm.TraceFreq;
 
 public class LightLog implements Iterable<LightTrace>{
@@ -23,11 +26,18 @@ public class LightLog implements Iterable<LightTrace>{
 		return traces.size();
 	}
 	
-	public TraceFreq convertToTraceFreq() {
-		TraceFreq result = new TraceFreq();
-		traces.entrySet().forEach( traceEntry ->
-				result.putFreq( traceEntry.getElement().asList(), traceEntry.getCount() ) );
-		return result;
+	public FiniteStochasticLang  convertToFiniteStochasticLang() {
+		TraceFreq traceFreq = new TraceFreq();
+		ActivityFreq activityFreq = new ActivityFreq();
+		for( Entry<LightTrace> traceEntry: traces.entrySet()) {
+			traceFreq.putFreq(traceEntry.getElement().asList(), 
+							  traceEntry.getCount());
+			for (String event: traceEntry.getElement() ) {
+				activityFreq.incActiviyFreq(event, traceEntry.getCount());
+			}
+		}
+		FiniteStochasticLang fsl = new FiniteStochasticLang(traceFreq,activityFreq);
+		return fsl;
 	}
 	
 }

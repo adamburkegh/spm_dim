@@ -1,6 +1,7 @@
 package qut.pm.setm;
 
 import java.net.InetAddress;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -147,6 +148,10 @@ public class RunStats {
 		return artifactCreator;
 	}
 
+	public List<TaskStats> getTaskRunStats() {
+		return Collections.unmodifiableList( taskRunStats );
+	}
+	
 	public String getMachineName() {
 		return machineName;
 	}
@@ -159,6 +164,10 @@ public class RunStats {
 		return inputLogFileName;
 	}
 
+	public String getInputModelFileName() {
+		return inputModelFileName;
+	}	
+	
 	public void setInputModelFileName(String inputModelFileName) {
 		this.inputModelFileName = inputModelFileName;
 	}
@@ -190,7 +199,8 @@ public class RunStats {
 			result.append(LINE_SEP);
 		}
 		return result.toString();
-	}	
+	}
+
 		
 	
 }

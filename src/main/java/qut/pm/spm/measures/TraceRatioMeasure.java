@@ -9,6 +9,7 @@ import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.Measure;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class TraceRatioMeasure extends AbstractStochasticLogCachingMeasure {
@@ -54,7 +55,7 @@ public class TraceRatioMeasure extends AbstractStochasticLogCachingMeasure {
 		return "trgs" + subtraceLength;
 	}
 
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		validateLogCache(log, classifier);
 		logEventFreq = calculateForLog(log, classifier);
 	}

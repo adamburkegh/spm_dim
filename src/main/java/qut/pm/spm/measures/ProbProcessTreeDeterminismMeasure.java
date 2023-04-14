@@ -1,9 +1,9 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.ppt.ProbProcessTree;
 import qut.pm.spm.ppt.ProbProcessTreeCheck;
 
@@ -25,7 +25,7 @@ public class ProbProcessTreeDeterminismMeasure implements ProbProcessTreeMeasure
 	}
 
 	@Override
-	public double calculate(XLog log, ProbProcessTree ppt, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, ProbProcessTree ppt, XEventClassifier classifier) {
 		return ProbProcessTreeCheck.deterministic(ppt)? 1.0: 0.0;
 	}
 

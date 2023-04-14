@@ -29,6 +29,9 @@ import qut.pm.setm.mutation.mutators.RemoveSubtreeRandom;
 import qut.pm.setm.mutation.mutators.RemoveUselessNodes;
 import qut.pm.setm.observer.ExportObserver;
 import qut.pm.setm.parameters.SETMParam;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.measures.AlphaPrecisionRestrictedMeasure;
+import qut.pm.spm.measures.AlphaPrecisionUnrestrictedMeasure;
 import qut.pm.spm.measures.EarthMoversTraceMeasure;
 import qut.pm.spm.measures.EventRatioMeasure;
 import qut.pm.spm.measures.GenTraceDiffMeasure;
@@ -44,7 +47,6 @@ import qut.pm.spm.measures.TraceEntropyPrecision;
 import qut.pm.spm.measures.TraceEntropyProjectFitness;
 import qut.pm.spm.measures.TraceEntropyProjectPrecision;
 import qut.pm.spm.measures.TraceOverlapRatioMeasure;
-import qut.pm.spm.measures.TraceProbabilityMassOverlap;
 import qut.pm.spm.measures.TraceRatioMeasure;
 import qut.pm.spm.playout.CachingPlayoutGenerator;
 import qut.pm.spm.ppt.ProbProcessTree;
@@ -71,9 +73,12 @@ public class SETMConfiguration {
 	public static final String CONFIG_SETM_POPULATION_SIZE		= "mr.setm.population.size";
 	public static final String CONFIG_SETM_ELITE_SIZE			= "mr.setm.elite.size";
 	public static final String CONFIG_SETM_CROSSOVER_CHANCE		= "mr.setm.crossover.chance";
-	public static final String CONFIG_SETM_TARGET_FITNESS		= "mr.setm.target.fitness";		
+	public static final String CONFIG_SETM_TARGET_FITNESS		= "mr.setm.target.fitness";
+	public static final String CONFIG_SETM_FITNESS_FUNCTION		= "mr.setm.fitness.function.class";		
 	public static final String CONFIG_CALCULATORS				= "mr.calculators";
-	public static final String CONFIG_PLAYOUT_GRANULARITY 				= "mr.playout.granularity";
+	public static final String CONFIG_PLAYOUT_GRANULARITY 		= "mr.playout.granularity";
+	public static final String CONFIG_INPUT_RUN_FILE_PATTERN 	= "mr.input.runfile.pattern";
+	public static final String CONFIG_INPUT_RUN_FILE_DIR 		= "mr.input.runfile.dir";
 
 
 	public SETMConfigParams configureFromProperties(Properties cfg) {
@@ -106,7 +111,7 @@ public class SETMConfiguration {
 		return activities;
 	}
 
-	protected void addMeasure(XLog log, SETMConfigParams cp, LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg, 
+	protected void addMeasure(ProvenancedLog log, SETMConfigParams cp, LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg, 
 							 MeasureEvaluatorFactory mef, StochasticLogCachingMeasure measure) 
 	{
 		FitnessEvaluator<ProbProcessTree> newEval = 
@@ -114,11 +119,11 @@ public class SETMConfiguration {
 		alg.put( newEval, 1.0 );
 	}
 
-	protected LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> initMeasures(XLog log, 
+	protected LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> initMeasures(ProvenancedLog log, 
 			SETMConfigParams cp, ExportObserver exportObserver) 
 	{
-		LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg = new LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double>();
-		
+		LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double> alg 
+			= new LinkedHashMap<FitnessEvaluator<ProbProcessTree>, Double>();
 		MeasureEvaluatorFactory mef = new MeasureEvaluatorFactory(exportObserver);
 		CachingPlayoutGenerator generator = new CachingPlayoutGenerator( cp.playoutGranularity );
 		addMeasure(log, cp, alg, mef, new EventRatioMeasure(generator));
@@ -131,20 +136,24 @@ public class SETMConfiguration {
 		addMeasure(log, cp, alg, mef, new TraceEntropyFitness(tem));
 		addMeasure(log, cp, alg, mef, new TraceEntropyProjectFitness(tem));
 		addMeasure(log, cp, alg, mef, new TraceEntropyProjectPrecision(tem));
+		addMeasure(log, cp, alg, mef, new AlphaPrecisionUnrestrictedMeasure(generator,0));
+		addMeasure(log, cp, alg, mef, new AlphaPrecisionUnrestrictedMeasure(generator,1));
+		addMeasure(log, cp, alg, mef, new AlphaPrecisionRestrictedMeasure(generator,1));
 		addMeasure(log, cp, alg, mef, new TraceOverlapRatioMeasure(generator));
-		addMeasure(log, cp, alg, mef, new TraceProbabilityMassOverlap(generator));
-		addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,1));
 		addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,5));
-		addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,10));
 		addMeasure(log, cp, alg, mef, new GenTraceDiffMeasure(generator));
 		LogStatsCache statsCache = new LogStatsCache();
 		addMeasure(log, cp, alg, mef, new SimplicityEdgeCountMeasure(statsCache));
 		addMeasure(log, cp, alg, mef, new SimplicityEntityCountMeasure(statsCache));
 		addMeasure(log, cp, alg, mef, new SimplicityStructuralStochasticUniqMeasure(statsCache));
+		// removed conf -> journal
+		// addMeasure(log, cp, alg, mef, new TraceProbabilityMassOverlap(generator));
+		// addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,1));
+		// addMeasure(log, cp, alg, mef, new GenTraceFloorMeasure(generator,10)); 
 		return alg;
 	}
 
-	public SETMParam buildETMParam(String loggingPath, XLog log, SETMConfigParams cp, ExportObserver exportObserver )
+	public SETMParam buildETMParam(String loggingPath, ProvenancedLog log, SETMConfigParams cp, ExportObserver exportObserver )
 	{
 		CentralRegistry registry;
 		registry = new CentralRegistry(log, cp.classifier.getEventClassifier(), new Random(cp.seed)); 

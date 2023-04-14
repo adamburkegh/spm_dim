@@ -1,10 +1,10 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.measures.TraceEntropyMeasure.TraceEntropyMeasurement;
 
 public class TraceEntropyPrecision implements StochasticLogCachingMeasure {
@@ -26,7 +26,7 @@ public class TraceEntropyPrecision implements StochasticLogCachingMeasure {
 	}
 
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		TraceEntropyMeasurement tem = traceEntropyMeasure.calculateTraceEntropyMeasure(log,net,classifier);
 		return tem.getEntropyPrecision();
 	}
@@ -37,7 +37,7 @@ public class TraceEntropyPrecision implements StochasticLogCachingMeasure {
 	}
 
 	@Override
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		traceEntropyMeasure.precalculateForLog(log,classifier);
 	}
 

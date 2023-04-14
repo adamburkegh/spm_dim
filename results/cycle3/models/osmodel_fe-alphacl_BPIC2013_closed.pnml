@@ -1,0 +1,152 @@
+<pnml xmlns="http://www.pnml.org/version-2009/grammar/pnml">
+   <net id="Petri net (Alpha)" type="http://www.pnml.org/version-2009/grammar/ptnet">
+      <toolspecific tool="StochasticPetriNet" version="0.2"/>
+      <page id="p1">
+         <transition id="n0">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">614.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Accepted+Assigned</text>
+            </name>
+         </transition>
+         <transition id="n1">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">3066.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Accepted+In Progress</text>
+            </name>
+         </transition>
+         <transition id="n2">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">527.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Accepted+Wait</text>
+            </name>
+         </transition>
+         <transition id="n3">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">3.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Completed+Cancelled</text>
+            </name>
+         </transition>
+         <transition id="n4">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">1565.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Completed+Closed</text>
+            </name>
+         </transition>
+         <transition id="n5">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">875.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Queued+Awaiting Assignment</text>
+            </name>
+         </transition>
+         <transition id="n6">
+            <graphics>
+               <dimension x="25.0" y="20.0"/>
+            </graphics>
+            <toolspecific tool="StochasticPetriNet" version="0.2">
+               <property key="distributionType">IMMEDIATE</property>
+               <property key="trainingData"></property>
+               <property key="weight">10.0</property>
+               <property key="invisible">false</property>
+               <property key="distributionParameters"></property>
+               <property key="priority">0</property>
+            </toolspecific>
+            <name>
+               <text>Unmatched+Unmatched</text>
+            </name>
+         </transition>
+         <place id="n7">
+            <graphics>
+               <dimension x="20.0" y="20.0"/>
+            </graphics>
+            <name>
+               <text>([Unmatched+Unmatched],[Completed+Closed])</text>
+            </name>
+         </place>
+         <place id="n8">
+            <graphics>
+               <dimension x="20.0" y="20.0"/>
+            </graphics>
+            <name>
+               <text>Start</text>
+            </name>
+         </place>
+         <place id="n9">
+            <graphics>
+               <dimension x="20.0" y="20.0"/>
+            </graphics>
+            <name>
+               <text>End</text>
+            </name>
+         </place>
+         <arc id="a0" source="n7" target="n4"/>
+         <arc id="a1" source="n8" target="n2"/>
+         <arc id="a2" source="n6" target="n7"/>
+         <arc id="a3" source="n8" target="n1"/>
+         <arc id="a4" source="n8" target="n5"/>
+         <arc id="a5" source="n8" target="n4"/>
+         <arc id="a6" source="n8" target="n0"/>
+         <arc id="a7" source="n4" target="n9"/>
+         <arc id="a8" source="n8" target="n6"/>
+      </page>
+   </net>
+</pnml>

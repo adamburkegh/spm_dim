@@ -1,42 +1,36 @@
 package qut.pm.spm.measures;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.deckfour.xes.classification.XEventNameClassifier;
-import org.deckfour.xes.model.XLog;
 import org.junit.Before;
 import org.junit.Test;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.StochasticPlayoutGenerator;
-import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
-public class TraceRatio3MeasureTest {
+public class TraceRatio3MeasureTest extends MeasureTest{
 
-	private static final double EPSILON = 0.001d;
-	private static final XEventNameClassifier NAME_CLASSIFIER = new XEventNameClassifier();
-	private DelimitedTraceToXESConverter converter = new DelimitedTraceToXESConverter();
-	private AbstractStochasticLogCachingMeasure measure3;
 	private PetriNetFragmentParser parser;
 	
 	@Before
 	public void setUp() {
-		measure3 = new TraceRatioMeasure(3);
+		measure = new TraceRatioMeasure(3);
 		parser = new PetriNetFragmentParser(); 
 	}
 	
 	@Test
 	public void zeroMatchShort() {
-		XLog log = converter.convertTextArgs("a");
+		ProvenancedLog log = plog("a");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
-		assertEquals(0.0d, measure3.calculate(log,net, NAME_CLASSIFIER), 0.01d);
+		assertEquals(0.0d, measure.calculate(log,net, NAME_CLASSIFIER), 0.01d);
 	}
 
 	@Test
 	public void zeroShortMatchWithChoice() {
-		XLog log = converter.convertTextArgs("a d","a e");
+		ProvenancedLog log = plog("a d","a e");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  					  "Start -> {a 2.0} -> p1 -> {b 2.0} -> End");
 		parser.addToAcceptingNet(net, "Start -> {a 2.0} -> p2 -> {c 2.0} -> End");
@@ -45,7 +39,7 @@ public class TraceRatio3MeasureTest {
 	
 	@Test
 	public void zeroMatchSingle() {
-		XLog log = converter.convertTextArgs("b","b");
+		ProvenancedLog log = plog("b","b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertMeasureEquals(0.0, log, net );
@@ -53,7 +47,7 @@ public class TraceRatio3MeasureTest {
 	
 	@Test
 	public void perfectMatchFullLength() {
-		XLog log = converter.convertTextArgs("a b c", "a b c", "a d e");
+		ProvenancedLog log = plog("a b c", "a b c", "a d e");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  					  "Start -> {a 2.0} -> p1 -> {b 2.0} -> p2 -> {c 2.0} -> End");
 		parser.addToAcceptingNet(net, "Start -> {a 2.0} -> p1 -> {d 1.0} -> p3 -> {e 2.0} -> End");
@@ -62,7 +56,7 @@ public class TraceRatio3MeasureTest {
 
 	@Test
 	public void perfectMatchSubtrace() {
-		XLog log = converter.convertTextArgs("a b d e","a c f g");
+		ProvenancedLog log = plog("a b d e","a c f g");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	"Start -> {a 2.0} -> p1 -> {b 2.0} -> p2 -> {d 2.0} -> p3 -> {e 2.0} -> End");
 		parser.addToAcceptingNet(net, 
@@ -72,7 +66,7 @@ public class TraceRatio3MeasureTest {
 	
 	@Test
 	public void partialMatchWithShort() {
-		XLog log = converter.convertTextArgs("a b c","g h i", "b c", "d");
+		ProvenancedLog log = plog("a b c","g h i", "b c", "d");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  					  "Start -> {a 2.0} -> p1 -> {b 1.0} -> p2 -> {c 1.0} -> End");
 		parser.addToAcceptingNet(net, "Start -> {a 2.0} -> p1 -> {d 1.0} -> p3 -> {e 1.0} -> End");
@@ -80,10 +74,10 @@ public class TraceRatio3MeasureTest {
 		assertMeasureEquals(1.0/3.0, log, net);
 	}
 
-	private void assertMeasureEquals(double expected, XLog log, AcceptingStochasticNet net) {
+	protected void assertMeasureEquals(double expected, ProvenancedLog log, AcceptingStochasticNet net) {
 		StochasticPlayoutGenerator generator = new StochasticPlayoutGenerator(log.size());
-		measure3 =  new TraceRatioMeasure(generator,3);		
-		assertEquals(expected, measure3.calculate(log,net, NAME_CLASSIFIER), EPSILON);
+		measure =  new TraceRatioMeasure(generator,3);		
+		assertEquals(expected, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
 	}
 
 	

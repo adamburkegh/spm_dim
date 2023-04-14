@@ -99,6 +99,9 @@ public class SETMReporter {
 		includedMeasures.add(Measure.ENTROPY_PRECISION_TRACEWISE);
 		includedMeasures.add(Measure.ENTROPY_FITNESS_TRACEPROJECT);
 		includedMeasures.add(Measure.ENTROPY_PRECISION_TRACEPROJECT);
+		includedMeasures.add(Measure.ALPHA_PRECISION_UNRESTRICTED_ZERO);
+		includedMeasures.add(Measure.ALPHA_PRECISION_UNRESTRICTED_1_PCT);
+		includedMeasures.add(Measure.ALPHA_PRECISION_RESTRICTED_1_PCT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_ENTITY_COUNT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_EDGE_COUNT);
 		includedMeasures.add(Measure.STRUCTURAL_SIMPLICITY_STOCHASTIC);
@@ -106,7 +109,12 @@ public class SETMReporter {
 		includedMeasures.add(Measure.TRACE_GENERALIZATION_FLOOR_5);
 		includedMeasures.add(Measure.TRACE_GENERALIZATION_FLOOR_10);
 		includedMeasures.add(Measure.TRACE_GENERALIZATION_DIFF_UNIQ);
-		//
+		// metrics
+		includedMeasures.add(Measure.MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY);
+		includedMeasures.add(Measure.ENTROPIC_RELEVANCE_UNIFORM);
+		includedMeasures.add(Measure.ENTROPIC_RELEVANCE_ZERO_ORDER);
+		includedMeasures.add(Measure.ENTROPIC_RELEVANCE_RESTRICTED_ZO);
+		// eval
 		includedMeasures.add(Measure.EARTH_MOVERS_LIGHT_COVERAGE);
 		includedMeasures.add(Measure.ENTROPY_PRECISION);
 		includedMeasures.add(Measure.ENTROPY_RECALL);

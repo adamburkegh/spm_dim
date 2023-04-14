@@ -17,7 +17,6 @@ public class SETMConfigParams{
 
 	// public boolean frMultiplication = false; //Whether the overall fitness should be fr * (SUM(weight*fitness)/SUM(weight)) or fr should be weighted.
 
-	// TODO private boolean createStatsFile = true;	
 	public Classifier classifier = Classifier.NAME;
 	public long seed = ClockUtil.nanoTime();
 	public String runId = "run";

@@ -1,0 +1,32 @@
+<runStats artifactCreator="pdeval-tph09" machineName="SEF-PA00143522" runnerVersion="dev-no-buildid-file">
+   <inputLogFileName>BPIC2018_control.xes</inputLogFileName>
+   <inputModelFileName>osmodel_tph09_BPIC2018_control.pnml</inputModelFileName>
+   <runExportFileName>var\mrun_BPIC2018_control_pdeval-tph09_20230226-024815.xml</runExportFileName>
+   <runDateTime>2023-02-26 14:48:10.178 AEST</runDateTime>
+   <nestedRunStats class="java.util.LinkedList"/>
+   <taskRunStats class="java.util.LinkedList">
+      <taskStats taskName="spmlogparser" runState="RUNNING">
+         <duration>0</duration>
+         <start>1677386890178</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="LOG_TRACE_COUNT">
+            <number class="java.lang.Integer">43808</number>
+         </measureStats>
+         <measureStats measure="LOG_EVENT_COUNT">
+            <number class="java.lang.Integer">161296</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Earth Movers Similarity Tuned" runState="SUCCESS">
+         <duration>165</duration>
+         <start>1677386894839</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="EARTH_MOVERS_LIGHT_COVERAGE">
+            <number class="java.lang.Double">0.9454136633331779</number>
+         </measureStats>
+      </taskStats>
+   </taskRunStats>
+   <errorMessage></errorMessage>
+   <runState>SUCCESS</runState>
+</runStats>

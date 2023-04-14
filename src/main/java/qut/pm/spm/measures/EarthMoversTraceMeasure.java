@@ -1,19 +1,17 @@
 package qut.pm.spm.measures;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XEvent;
-import org.deckfour.xes.model.XLog;
-import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.FiniteStochasticLangGenerator;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure {
@@ -23,6 +21,8 @@ public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure
 	private static final double EPSILON = 0.0001;
 	protected TraceFreq logTraceFreq;
 	protected TraceFreq modelTraceFreq;
+	
+	private FiniteStochasticLangGenerator traceFreqGen = new FiniteStochasticLangGenerator();
 	
 	public Measure getMeasure() {
 		return Measure.EARTH_MOVERS_TRACEWISE;
@@ -46,25 +46,12 @@ public class EarthMoversTraceMeasure extends AbstractStochasticLogCachingMeasure
 		return "emtr";
 	}
 
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		validateLogCache(log, classifier);
-		logTraceFreq = calculateForLog(log, classifier);
+		logTraceFreq = traceFreqGen.calculateTraceFreqForLog(log, classifier);
 	}
 
 	
-	protected TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
-		TraceFreq result = new TraceFreq();
-		for (XTrace trace: log) {
-			LinkedList<String> newTrace = new LinkedList<String>();
-			for (XEvent event: trace) {
-				String classId = classifier.getClassIdentity(event);
-				newTrace.add(classId);
-			}
-			result.incTraceFreq(newTrace);
-		}
-		return result;
-	}
-
 	@Override
 	protected double calculateForPlayout(TraceFreq playoutLog) {
 		modelTraceFreq = playoutLog;

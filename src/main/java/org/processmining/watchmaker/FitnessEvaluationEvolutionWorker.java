@@ -99,6 +99,5 @@ public class FitnessEvaluationEvolutionWorker {
  protected void finalize() throws Throwable
  {
      executor.shutdown();
-     super.finalize();
  }
 }

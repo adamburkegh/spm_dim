@@ -70,6 +70,8 @@ public class LogStatsCache {
 
 	private LogStats calculateStats(XLog log, XEventClassifier classifier) {
 		Set<List<String>> uniqTraces = new HashSet<>();
+		int maxTraceLength = 0;
+		long cumTraceLength = 0;
 		for (XTrace trace: log) {
 			LinkedList<String> newTrace = new LinkedList<String>();
 			for (XEvent event: trace) {
@@ -77,8 +79,13 @@ public class LogStatsCache {
 				newTrace.add(classId);
 			}
 			uniqTraces.add(newTrace);
+			int ns = newTrace.size();
+			if (ns > maxTraceLength)
+				maxTraceLength = ns;
+			cumTraceLength += ns;
 		}
-		LogStats result = new LogStats(log,classifier,uniqTraces.size());
+		double avgLength = (double)cumTraceLength / (double)log.size();
+		LogStats result = new LogStats(log,classifier,uniqTraces.size(),avgLength);
 		return result;
 	}
 	

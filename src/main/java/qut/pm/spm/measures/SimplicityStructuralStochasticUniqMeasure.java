@@ -1,10 +1,10 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 public class SimplicityStructuralStochasticUniqMeasure implements StochasticLogCachingMeasure {
 	
@@ -26,9 +26,9 @@ public class SimplicityStructuralStochasticUniqMeasure implements StochasticLogC
 	}
 
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
 		precalculateForLog(log,classifier);
-		StochasticStructuralUniqueness ssu = new StochasticStructuralUniqueness();  
+		StochasticStructuralComplexity ssu = new StochasticStructuralComplexity();  
 		double result = 1d - ( (double)(ssu.calculate(log,anet,classifier))  / (double)uniqueTraceCount) ;
 		return (result < 0? 0d: result);
 	}
@@ -39,7 +39,7 @@ public class SimplicityStructuralStochasticUniqMeasure implements StochasticLogC
 	}
 
 	@Override
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		LogStats stats = logStatsCache.getStats(log,classifier);
 		uniqueTraceCount = stats.getUniqueTraceCount();
 	}

@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.log.ProvenancedLogImpl;
 import qut.pm.xes.helpers.DelimitedTraceToXESConverter;
 
 public class TraceOverlapRatioMeasureTest {
@@ -28,7 +30,7 @@ public class TraceOverlapRatioMeasureTest {
 	
 	@Test
 	public void zeroOverlap() {
-		XLog log = converter.convertTextArgs("b");
+		ProvenancedLog log = plog("b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertEquals(0.0d, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
@@ -36,7 +38,7 @@ public class TraceOverlapRatioMeasureTest {
 
 	@Test
 	public void perfectOverlap() {
-		XLog log = converter.convertTextArgs("a","b c");
+		ProvenancedLog log = plog("a","b c");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		parser.addToAcceptingNet(net, 
@@ -46,7 +48,7 @@ public class TraceOverlapRatioMeasureTest {
 	
 	@Test
 	public void middlingOverlap() {
-		XLog log = converter.convertTextArgs("a","b c");
+		ProvenancedLog log = plog("a","b c");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {d 2.0} -> End");
 		parser.addToAcceptingNet(net, 
@@ -54,6 +56,10 @@ public class TraceOverlapRatioMeasureTest {
 		assertEquals(0.5d, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
 	}
 
-
+	private ProvenancedLog plog(String ... args) {
+		XLog log = converter.convertTextArgs(args);
+		ProvenancedLog plog = new ProvenancedLogImpl(log,"testDummyFileName");
+		return plog;
+	}
 	
 }

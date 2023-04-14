@@ -1,11 +1,11 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 public class EntityCount implements StochasticLogCachingMeasure{
 
@@ -20,7 +20,7 @@ public class EntityCount implements StochasticLogCachingMeasure{
 	}
 
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
 		StochasticNet net = anet.getNet();
 		return net.getPlaces().size() + net.getTransitions().size();
 	}
@@ -31,7 +31,7 @@ public class EntityCount implements StochasticLogCachingMeasure{
 	}
 
 	@Override
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		// No-op
 	}
 

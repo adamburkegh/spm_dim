@@ -1,10 +1,10 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 public class SimplicityEdgeCountMeasure implements StochasticLogCachingMeasure {
 	
@@ -26,7 +26,7 @@ public class SimplicityEdgeCountMeasure implements StochasticLogCachingMeasure {
 	}
 
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet anet, XEventClassifier classifier) {
 		precalculateForLog(log,classifier);
 		double result = 1d - ( (double)anet.getNet().getEdges().size() / (double)uniqueTraceCount) ;
 		return (result < 0? 0d: result);
@@ -38,7 +38,7 @@ public class SimplicityEdgeCountMeasure implements StochasticLogCachingMeasure {
 	}
 
 	@Override
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		LogStats stats = logStatsCache.getStats(log,classifier);
 		uniqueTraceCount = stats.getUniqueTraceCount();
 	}

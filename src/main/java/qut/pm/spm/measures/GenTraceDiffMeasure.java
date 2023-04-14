@@ -1,9 +1,6 @@
 package qut.pm.spm.measures;
 
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.model.XEvent;
@@ -12,12 +9,14 @@ import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.Measure;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.PlayoutGenerator;
 
 public class GenTraceDiffMeasure extends AbstractStochasticLogCachingMeasure {
 
 	protected TraceFreq logTraceFreq;
 	protected TraceFreq modelTraceFreq;
+	private GenTraceDiffCalculation gtdCalc = new GenTraceDiffCalculation();
 	
 	public Measure getMeasure() {
 		return Measure.TRACE_GENERALIZATION_DIFF_UNIQ;
@@ -41,7 +40,7 @@ public class GenTraceDiffMeasure extends AbstractStochasticLogCachingMeasure {
 		return "gentrdiffunq";
 	}
 
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		validateLogCache(log, classifier);
 		logTraceFreq = calculateForLog(log, classifier);
 	}
@@ -63,24 +62,10 @@ public class GenTraceDiffMeasure extends AbstractStochasticLogCachingMeasure {
 	@Override
 	protected double calculateForPlayout(TraceFreq playoutLog) {
 		modelTraceFreq = playoutLog;
-		return gencalc(logTraceFreq,modelTraceFreq);
+		return gtdCalc.calculateGeneralizationTraceDiff(logTraceFreq,modelTraceFreq);
 	}
 
 	
-	protected double gencalc(TraceFreq traceFreqLog, TraceFreq traceFreqModel) {
-		double ct = 0.0d;
-		Set<List<String>> keys = new HashSet<>(traceFreqLog.keySet());
-		keys.addAll(traceFreqModel.keySet());
-		for (List<String> trace : keys ) {
-			double flog = traceFreqLog.getFreq(trace);
-			double fmodel = traceFreqModel.getFreq(trace);
-			if (flog > 0 && fmodel > 0) {
-				ct += Math.min(flog,fmodel) - 1;
-			}
-		}
-		return ct / (double)traceFreqLog.getTraceTotal();
-	}
-
 	public String format() {
 		return "GenTraceDiffMeasure [logFreq=" + logTraceFreq.format() + ", modelFreq=" + modelTraceFreq.format() + "]";
 	}

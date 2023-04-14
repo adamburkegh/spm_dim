@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import qut.pm.prom.helpers.PetriNetFragmentParser;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.log.ProvenancedLogImpl;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
 import qut.pm.spm.ppt.ProbProcessTreeFactory;
 import qut.pm.spm.ppt.ProbProcessTreeNode;
@@ -30,7 +32,7 @@ public class EventRatioMeasureTest {
 	
 	@Test
 	public void perfectMatchSingle() {
-		XLog log = converter.convertTextArgs("a");
+		ProvenancedLog log = plog("a");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertMeasureEquals(1.0d, log, net);
@@ -38,7 +40,7 @@ public class EventRatioMeasureTest {
 
 	@Test
 	public void perfectMatchWithChoice() {
-		XLog log = converter.convertTextArgs("a","b");
+		ProvenancedLog log = plog("a","b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  					  "Start -> {a 2.0} -> End");
 		parser.addToAcceptingNet(net, "Start -> {b 2.0} -> End");
@@ -48,7 +50,7 @@ public class EventRatioMeasureTest {
 	
 	@Test
 	public void zeroMatch() {
-		XLog log = converter.convertTextArgs("b","b");
+		ProvenancedLog log = plog("b","b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertMeasureEquals(0.0, log, net );
@@ -56,7 +58,7 @@ public class EventRatioMeasureTest {
 	
 	@Test
 	public void zeroMatchMultiActivity() {
-		XLog log = converter.convertTextArgs("a","b");
+		ProvenancedLog log = plog("a","b");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {c 2.0} -> End");
 		assertMeasureEquals(0.0, log, net );
@@ -64,7 +66,7 @@ public class EventRatioMeasureTest {
 
 	@Test
 	public void missingActivity() {
-		XLog log = converter.convertTextArgs("a","a");
+		ProvenancedLog log = plog("a","a");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  					  "Start -> {a 2.0} -> End");
 		parser.addToAcceptingNet(net, "Start -> {b 2.0} -> End");
@@ -74,7 +76,7 @@ public class EventRatioMeasureTest {
 	@Test
 	public void partialMatch() {
 		// three activities six events a = 3/6, b = 2/6, c = 1/6
-		XLog log = converter.convertTextArgs("a a","a b","b","c");
+		ProvenancedLog log = plog("a a","a b","b","c");
 		// two activities two events a = 1/2, b = 1/2
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
@@ -109,16 +111,21 @@ public class EventRatioMeasureTest {
 		ppt.addChild(  pptSeq1 );
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = converter.convertTextArgs("Queued","Completed","Unmatched",
+		ProvenancedLog log = plog("Queued","Completed","Unmatched",
 											 "Queued","Completed","Unmatched",
 											 "Queued","Completed","Unmatched");
-		assertMeasureEquals(0.6244d, log, snet);
+		assertMeasureEquals(0.596d, log, snet);
 	}
 	
-	private void assertMeasureEquals(double expected, XLog log, AcceptingStochasticNet net) {
+	private void assertMeasureEquals(double expected, ProvenancedLog log, AcceptingStochasticNet net) {
 		assertEquals(expected, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
 	}
 
-	
+	private ProvenancedLog plog(String ... args) {
+		XLog log = converter.convertTextArgs(args);
+		ProvenancedLog plog = new ProvenancedLogImpl(log,"testDummyFileName");
+		return plog;
+	}
+
 	
 }

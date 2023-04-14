@@ -6,13 +6,16 @@ This also includes a genetic algorithm for mining stochastic process models, cal
 
 The paper describing this experiment is "Burke, A., Leemans, SJJ, Wynn, M.T, van der Aalst, W.M.D, and ter Hofstede, A.H.M. - Stochastic Process Model-Log Quality Dimensions: An Experimental Study, ICPM 2022".
 
+Further experiments with additional measures and analysis were performed in 2022-2023.
+
 # Development Setup and Installation
 
 ## Gradle and Java
 
-Checkout [`prom-helpers`](https://github.com/adamburkegh/prom-helpers) 
+Checkout [`prom-helpers`](https://github.com/adamburkegh/prom-helpers) and [`prob-process-tree`](https://github.com/adamburkegh/prob-process-tree)
 
-In `prom-helpers`, `./gradlew test ./gradlew publishToMavenLocal`
+In `prob-process-tree`, `./gradlew test ; ./gradlew publishToMavenLocal`
+In `prom-helpers`, `./gradlew test ; ./gradlew publishToMavenLocal`
 
 In `spd_dim`, `./gradlew test`
 

@@ -3,7 +3,6 @@ package qut.pm.setm.evaluation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.plugins.InductiveMiner.Pair;
@@ -15,6 +14,7 @@ import org.processmining.stochasticawareconformancechecking.helperclasses.Stocha
 import qut.pm.setm.TaskStats;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 
 
@@ -46,7 +46,7 @@ public class EntropyPrecisionRecallCalculator implements SPNQualityCalculator {
 
 	
 	@Override
-	public void calculate(PluginContext context, AcceptingStochasticNet net, XLog log, 
+	public void calculate(PluginContext context, AcceptingStochasticNet net, ProvenancedLog log, 
 			XEventClassifier classifier, TaskStats stats) throws Exception 
 	{
 		LOGGER.info("Computing entropy-based quality measures (SL) ");

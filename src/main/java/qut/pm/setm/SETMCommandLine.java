@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -23,6 +24,8 @@ import org.processmining.plugins.etm.CentralRegistry;
 
 import qut.pm.setm.observer.ExportObserver;
 import qut.pm.setm.parameters.SETMParam;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.log.ProvenancedLogImpl;
 import qut.pm.spm.ppt.ProbProcessTree;
 import qut.pm.util.ClockUtil;
 
@@ -42,7 +45,7 @@ public class SETMCommandLine {
 	
 	public static final String NORMAL = "NORMAL"; //Act normal: e.g. 1 log, 1 process tree
 	
-	private XLog log;
+	private ProvenancedLog log;
 	private String logFilename;
 	SETMConfiguration setmConfig = new SETMConfiguration();
 
@@ -68,7 +71,10 @@ public class SETMCommandLine {
 	private void normalMethod(String loggingPath, SETMConfigParams configParams) {
 		LOGGER.info("Starting " + NORMAL);
 		RunStats runStats = new RunStats(configParams.buildVersion, configParams.logFileName, configParams.runId);
-		ExportObserver exportObserver = new ExportObserver(runStats, loggingPath);
+		RunStatsExporter runExporter = new RunStatsExporter(loggingPath);
+		RunCalculator runCalc = new RunCalculator(Collections.emptyList(), 
+				runExporter, log, configParams.classifier.getEventClassifier());
+		ExportObserver exportObserver = new ExportObserver(runStats, runCalc);
 		SETMParam etmParamMind = setmConfig.buildETMParam(loggingPath, log, configParams, exportObserver);
 		SETM etmMind = new SETM(etmParamMind);
 		etmMind.run();
@@ -127,7 +133,8 @@ public class SETMCommandLine {
 	    	XUniversalParser parser = new XUniversalParser();
 	    	File lf = new File(logFile);
 			Collection<XLog> xlogs = parser.parse(lf);
-	    	log = xlogs.iterator().next();
+	    	XLog xlog = xlogs.iterator().next();
+	    	log = new ProvenancedLogImpl(xlog, logFile);
 	    	logFilename = lf.getName(); 
     	}catch (Exception ioe) {
     		LOGGER.error("Problem opening file " + logFile + ": " + ioe.getMessage() );

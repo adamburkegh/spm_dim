@@ -46,5 +46,16 @@ public class RunStatsExporter{
 	private String logPrefix(String inputLogName) {
 		return inputLogName.substring(0, inputLogName.lastIndexOf("." + XESLogUtils.XES_FILE_SUFFIX));
 	}
+
+	public TaskStats makeNewTask(RunStats runStats, String newTaskName) {
+		TaskStats newTaskStats = new TaskStats(newTaskName);
+		newTaskStats.markRunning();
+		runStats.addTask(newTaskStats);
+		return newTaskStats;
+	}
+
+	public String getOutputDir() {
+		return outputDir;
+	}
 	
 }
