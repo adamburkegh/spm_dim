@@ -10,19 +10,12 @@ library(psych)
 library(RColorBrewer)
 ###
 
-hpath = "c:/Users/burkeat/bpm/"
-# hpath = "c:/Users/Adam/bpm/"
-
-workingPath = paste(hpath,"bpm-dimensions-lab/var/",sep="")
-resultsPath = paste(hpath,"bpm-dimensions-lab/results/",sep="")
+workingPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/var/"
+resultsPath = "c:/Users/burkeat/bpm/bpm-dimensions-lab/results/"
 
 
-
-
-exportPic <- TRUE 
-# exportPic <- FALSE
+exportPic <- TRUE
 matchSampleSizes <- TRUE  # Duplicate data points for underweight sources
-# matchSampleSizes <- FALSE  
 
 ### 
 
@@ -49,14 +42,76 @@ postfig <- function()
     }
 }
 
+filter_for_BPIC2013_closed <- function(rd){
+	# Based on the correlation matrix, these columns are identical
+	# TRACE_OVERLAP_RATIO TOR == TRACE_PROBMASS_OVERLAP TMO 
+	# TRACE_GENERALIZATION_FLOOR_1 TGF1 == TRACE_GENERALIZATION_FLOOR_5 TGF5 
+	#  == TRACE_GENERALIZATION_FLOOR_10 TGF10
+	# As this is an invalid matrix for factor analysis, exclude.
+	#
+	result <- rd %>% select (
+				  TRACE_PROBMASS_OVERLAP, 
+			    ACTIVITY_RATIO_GOWER,
+				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
+				  TRACE_RATIO_GOWER_4,
+				  ENTROPY_PRECISION_TRACEWISE,
+				  ENTROPY_FITNESS_TRACEWISE,
+				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
+			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  TRACE_GENERALIZATION_FLOOR_1,
+				  TRACE_GENERALIZATION_DIFF_UNIQ  )
+
+}
+
+filter_for_Sepsis <- function(rd){
+	# Based on the correlation matrix, these columns are identical
+	# TRACE_OVERLAP_RATIO TOR == TRACE_PROBMASS_OVERLAP TMO 
+	#  == ENTROPY_FITNESS_TRACEWISE EFT
+	# TRACE_GENERALIZATION_FLOOR_5 TGF5 == TRACE_GENERALIZATION_FLOOR_10 TGF10
+	# As this is an invalid matrix for factor analysis, exclude.
+	#
+	result <- rd %>% select (
+				  TRACE_PROBMASS_OVERLAP, 
+			    ACTIVITY_RATIO_GOWER,
+				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
+				  TRACE_RATIO_GOWER_4,
+				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
+			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  TRACE_GENERALIZATION_FLOOR_1,
+				  TRACE_GENERALIZATION_FLOOR_5,
+				  TRACE_GENERALIZATION_DIFF_UNIQ  )
+
+}
 
 
   
 
+filter_for_all <- function(rd){
+	# Based on the correlation matrix, these columns are identical
+	# TRACE_OVERLAP_RATIO TOR == TRACE_PROBMASS_OVERLAP TMO 
+	# As this is an invalid matrix for factor analysis, exclude.
+	#
+	result <- rd %>% select (
+				  TRACE_PROBMASS_OVERLAP, 
+			        ACTIVITY_RATIO_GOWER,
+				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
+				  TRACE_RATIO_GOWER_4,
+				  ENTROPY_PRECISION_TRACEWISE,
+				  ENTROPY_FITNESS_TRACEWISE,
+				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
+				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
+			        STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  TRACE_GENERALIZATION_FLOOR_1,
+				  TRACE_GENERALIZATION_FLOOR_5,
+				  TRACE_GENERALIZATION_FLOOR_10,
+				  TRACE_GENERALIZATION_DIFF_UNIQ  )
+}
+
 
 corheatmap <- function(pv,sel,main){
-  mname <- paste(main,"_d",nfactors,sep='')
-	prepfig( paste("heatmap",mname,sep=""),sel)
+	prepfig( paste("heatmap2",main,sep=""),sel)
 	col= colorRampPalette(brewer.pal(8, "Blues"))(25)
 	heatmap(pv, Colv = NA, Rowv = NA,margins=c(10,21), col= col,
 	        cexRow = 1.0, #cexCol = 1.5,
@@ -93,7 +148,7 @@ normDataSizes <- function(rdf){
 						gtype == "predef" ~ scaleBy
 					)
 		)
-	rdf %>% uncount(rdf$scaleBy) %>% select (-scaleBy)
+	rdf %>% uncount(rdf$scaleBy)
 }
 
 pf <- function(msg){
@@ -135,6 +190,7 @@ pcaTopFeatures <- function(pcam,thresh){
 }
 
 
+
 warning_handler <- function(c) cat("Found expected warning...\n")
 
 
@@ -143,7 +199,13 @@ dev.new()
 
 
 
-rundata = read.csv( paste(workingPath,"hpc1.3.2.psv", sep=""),
+# rundata = read.csv( paste(workingPath,"hpc.psv", sep=""),
+#            sep ="|", strip.white=TRUE)
+
+# rundata = read.csv( paste(workingPath,"hpc1.1.0.psv", sep=""),
+#           	 sep ="|", strip.white=TRUE)
+
+rundata = read.csv( paste(workingPath,"hpc1.2.2.psv", sep=""),
            		 sep ="|", strip.white=TRUE)
 
 
@@ -172,18 +234,17 @@ ctlogns <- 'all'
 # ctlogns <- 'discorand'
 
 
-# nfactors <- 5
 # nfactors <- 4
 nfactors <- 3
-# nfactors <- 2
+
 
 scalepca <- TRUE
 
-resfile <-  paste(workingPath,"pca4_",nfactors,ctlogns,".txt",sep="") 
+resfile <-  paste(workingPath,"pca2_",nfactors,ctlogns,".txt",sep="") 
 
 write_lines(paste(ctlogns,"n=",nfactors),resfile)
 
-pf(colnames(rundata))
+
 
 creators <- unique(rundata$Artifact.Creator)
 
@@ -212,7 +273,8 @@ pf(paste("Sample size n =",nrow(rundata)))
 
 fnumericcols <- c(			'Log.Trace.Count',
                         'Log.Event.Count',
-                        'TRACE_OVERLAP_RATIO',  		
+                        'TRACE_OVERLAP_RATIO',  		# highly correlated 
+                        'TRACE_PROBMASS_OVERLAP',
                         'EARTH_MOVERS_TRACEWISE',
                         'EVENT_RATIO_GOWER',
                         'TRACE_RATIO_GOWER_2','TRACE_RATIO_GOWER_3',
@@ -224,23 +286,10 @@ fnumericcols <- c(			'Log.Trace.Count',
                         'STRUCTURAL_SIMPLICITY_ENTITY_COUNT',
                         'STRUCTURAL_SIMPLICITY_EDGE_COUNT',
                         'STRUCTURAL_SIMPLICITY_STOCHASTIC',
+                        'TRACE_GENERALIZATION_FLOOR_1', 	# highly correlated 
                         'TRACE_GENERALIZATION_FLOOR_5',
-                        'TRACE_GENERALIZATION_DIFF_UNIQ'	,
-                        'MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY',
-                        'ALPHA_PRECISION_UNRESTRICTED_ZERO',
-                        'ENTROPIC_RELEVANCE_RESTRICTED_ZO',
-                        'ENTROPIC_RELEVANCE_UNIFORM',
-                        'ENTROPIC_RELEVANCE_ZERO_ORDER'
-                     )
-
-# removed columns conf -> journal
-# 'TRACE_PROBMASS_OVERLAP',
-# 'TRACE_GENERALIZATION_FLOOR_1', 	# highly correlated 
-# 'TRACE_GENERALIZATION_FLOOR_10',  	# highly correlated 
-
-
-# Excluded as all zero
-rundata <- subset(rundata, select=-c(ALPHA_PRECISION_RESTRICTED_1_PCT,ALPHA_PRECISION_UNRESTRICTED_1_PCT))
+                        'TRACE_GENERALIZATION_FLOOR_10',  	# highly correlated 
+                        'TRACE_GENERALIZATION_DIFF_UNIQ'				)
 
 rundata[,fnumericcols] <- sapply(rundata[,fnumericcols], as.numeric)
 
@@ -255,11 +304,7 @@ rdprescale <- rundata
 
 # rd <- rundata # %>% filter (Log == ctlog) # %>% 
 # rd <- rundata %>% filter (Log == 'BPIC2013 closed' || Log == 'Sepsis') %>% 
-
-if (ctlogns == 'discorand'){
-  rundata <- rundata %>% filter ( !grepl('setm',Artifact.Creator) ) 
-}
-
+#rundata <- rundata %>% filter ( !grepl('setm',Artifact.Creator) ) 
 # %>%
 #		      filter ( !grepl('rando',Artifact.Creator) ) %>%
 
@@ -278,11 +323,14 @@ if (matchSampleSizes){
 
 
 rdshortname <- rundata %>% select (where(is.numeric) ) %>%
-                           select (-Log.Id) %>%
+                           select (-scaleBy,-Log.Id,
+                                   -MODEL_EDGE_COUNT,-MODEL_ENTITY_COUNT,
+                                   -LOG_EVENT_COUNT,-LOG_TRACE_COUNT) %>%
                     rename(
                       LTC = Log.Trace.Count,
                       LEC = Log.Event.Count,
                       TOR = TRACE_OVERLAP_RATIO ,
+                      TMO = TRACE_PROBMASS_OVERLAP,
                       EMT = EARTH_MOVERS_TRACEWISE,
                       ARG = EVENT_RATIO_GOWER,
                       TRG2 = TRACE_RATIO_GOWER_2,
@@ -293,51 +341,34 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
                       SSENC = STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
                       SSEDC = STRUCTURAL_SIMPLICITY_EDGE_COUNT,
                       SSS = STRUCTURAL_SIMPLICITY_STOCHASTIC,
+                      TGF1 = TRACE_GENERALIZATION_FLOOR_1,
                       TGF5 = TRACE_GENERALIZATION_FLOOR_5,
+                      TGF10 = TRACE_GENERALIZATION_FLOOR_10,
                       TGDU = TRACE_GENERALIZATION_DIFF_UNIQ,
                       HJPT = ENTROPY_PRECISION_TRACEPROJECT,
-                      HJFT = ENTROPY_FITNESS_TRACEPROJECT ,
-                      CSS = MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,
-                      APU0 = ALPHA_PRECISION_UNRESTRICTED_ZERO,
-                      HRU = ENTROPIC_RELEVANCE_UNIFORM,
-                      HRZ = ENTROPIC_RELEVANCE_ZERO_ORDER,
-                      HRR = ENTROPIC_RELEVANCE_RESTRICTED_ZO,
-                      MEC = MODEL_ENTITY_COUNT,
-                      MGC = MODEL_EDGE_COUNT
-                      ) %>%
-                  select(LTC,LEC,
-                         MEC,MGC,
-                         CSS,
-                         TOR,EMT,
-                         ARG,TRG2,TRG3,TRG4,
-                         HIPT,HIFT,
-                         SSENC,SSEDC,SSS,
-                         TGF5,TGDU,
-                         HJPT,HJFT,
-                         APU0,
-                         HRU,HRZ,HRR)
+                      HJFT = ENTROPY_FITNESS_TRACEPROJECT )
 
 logcor <- cor(rdshortname)
-prepfig("corlog4",ctlogns, width=30, height=30)
-# corrplot(logcor, method="circle", tl.cex=1.5, cl.cex=1.8)
-corrplot(logcor, method='number', tl.cex=1.5, cl.cex=1.8)
+prepfig("corlog2",ctlogns, width=30, height=30)
+corrplot(logcor, method="circle", tl.cex=1.5, cl.cex=1.8)
 postfig()
 
 
 
 # Exclude very highly correlated columns
-rdo <- rundata %>%
+rdo <- rundata %>% 
 # filter ( Log == 'BPIC2013 closed' || Log == 'BPIC2013 incidents'
 #                        || Log == 'BPIC2018 control' || 'BPIC2018 reference'
 #				|| Log == 'Sepsis' ) %>%
 			# filter ( !grepl('setm',Artifact.Creator) )  %>% ## exclude SETM
 # 		      filter (Log == ctlog)  %>%
 		      select (# Model.Run,
-				  Log,
+				  Log, 
 				  Log.Id,
 				  Log.Trace.Count,
 				  Log.Event.Count,
-				  # TRACE_OVERLAP_RATIO, # corr with EMT on DISCO+RAND
+				  #TRACE_OVERLAP_RATIO,  		# highly correlated 
+				  TRACE_PROBMASS_OVERLAP,
 				  EARTH_MOVERS_TRACEWISE,
 			    EVENT_RATIO_GOWER,
 				  TRACE_RATIO_GOWER_2,TRACE_RATIO_GOWER_3,
@@ -349,18 +380,12 @@ rdo <- rundata %>%
 				  STRUCTURAL_SIMPLICITY_ENTITY_COUNT,
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
 			    STRUCTURAL_SIMPLICITY_STOCHASTIC,
+				  #TRACE_GENERALIZATION_FLOOR_1, 	# highly correlated 
 				  TRACE_GENERALIZATION_FLOOR_5,
+				  #TRACE_GENERALIZATION_FLOOR_10,  	# highly correlated 
 				  TRACE_GENERALIZATION_DIFF_UNIQ			,
-				  # MODEL_ENTITY_COUNT,
-				  MODEL_EDGE_COUNT,
-				  # MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,
-				  ALPHA_PRECISION_UNRESTRICTED_ZERO,
-				  ENTROPIC_RELEVANCE_RESTRICTED_ZO,
-				  ENTROPIC_RELEVANCE_UNIFORM,
-				  ENTROPIC_RELEVANCE_ZERO_ORDER,
 				  gtype
 				  )
-
 
 rdo <- rename(rdo,ACTIVITY_RATIO_GOWER= EVENT_RATIO_GOWER)
 
@@ -380,20 +405,14 @@ rdnl <- rdnl %>%  select (
 				  STRUCTURAL_SIMPLICITY_EDGE_COUNT,
 				  TRACE_GENERALIZATION_DIFF_UNIQ,
 				  EARTH_MOVERS_TRACEWISE,
-				  # TRACE_OVERLAP_RATIO,
+				  TRACE_PROBMASS_OVERLAP,
 				  ENTROPY_PRECISION_TRACEWISE,
 				  ENTROPY_FITNESS_TRACEWISE,
 				  ENTROPY_PRECISION_TRACEPROJECT,
+				  #TRACE_GENERALIZATION_FLOOR_1,
 				  TRACE_GENERALIZATION_FLOOR_5,
-				  ENTROPY_FITNESS_TRACEPROJECT,
-				  ENTROPIC_RELEVANCE_UNIFORM,
-				  ENTROPIC_RELEVANCE_ZERO_ORDER,
-				  ENTROPIC_RELEVANCE_RESTRICTED_ZO,
-				  # MODEL_ENTITY_COUNT,
-				  MODEL_EDGE_COUNT,
-				  # MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,  # test excl complexity
-				  ALPHA_PRECISION_UNRESTRICTED_ZERO			  
-				  )
+				  #TRACE_GENERALIZATION_FLOOR_10,				  
+				  ENTROPY_FITNESS_TRACEPROJECT)
 
 
 
@@ -421,17 +440,15 @@ pcavar <- get_pca_var(pcares)
 
 pcanl <- prcomp(rdnl, scale = scalepca)
 
+pf("PCA contrib w/ log")
 pfc(pcavar$contrib[,1:(nfactors+1)])
 
 pcnlv <- get_pca_var(pcanl)
+pf("PCA contrib no log")
 pfc(pcnlv$contrib[,1:nfactors])
 
 #scree
-# including log
-print(fviz_eig(pcares) 
-      + geom_hline(yintercept = 10))
-
-
+#fviz_eig(pcares)
 
 prepfig("screeeig",ctlogns)
 print(fviz_eig(pcanl) 
@@ -443,18 +460,18 @@ colours <- palette(rainbow(nfactors))
 
 
 
-pcaPlots <- TRUE
+pcaPlots <- FALSE
 ellipsePlot <- TRUE
 
 
 
 if (ellipsePlot){
-  pcaEllipsePlot("pca4ellipselog",ctlogns,"PCA1","PCA2",c(1,2),rdo$Log  )
+  pcaEllipsePlot("pca2ellipselog",ctlogns,"PCA1","PCA2",c(1,2),rdo$Log  )
   # "PCA1 (Adhesion)", "PCA2 (Simplicity)") +
-  pcaEllipsePlot("pca4ellipselog23",ctlogns,"PCA2","PCA3",c(2,3), rdo$Log  )
+  pcaEllipsePlot("pca2ellipselog23",ctlogns,"PCA2","PCA3",c(2,3), rdo$Log  )
   # "PCA2 (Simplicity)", "PCA3 (Entropy)") +
-  pcaEllipsePlot("pca4ellipsedc",ctlogns,"PCA1","PCA2",c(1,2),rdo$gtype  )
-  pcaEllipsePlot("pca4ellipsedc23",ctlogns,"PCA2","PCA3",c(2,3), rdo$gtype  )
+  pcaEllipsePlot("pca2ellipsedc",ctlogns,"PCA1","PCA2",c(1,2),rdo$gtype  )
+  pcaEllipsePlot("pca2ellipsedc23",ctlogns,"PCA2","PCA3",c(2,3), rdo$gtype  )
 }
 
 
@@ -500,61 +517,41 @@ fviz_pca_biplot(pcares, repel = FALSE,
                 label = "var")
 
 
-# 1 vs 2
 fviz_pca_biplot(pcanl, repel = FALSE,
                 col.var = "#2E9FDF", # Variables color
                 col.ind = "#696969",  # Individuals color
                 label = "var")
-
-# 2 vs 3
-fviz_pca_biplot(pcanl, axes=c(2,3), repel = FALSE,
-                col.var = "#2E9FDF", # Variables color
-                col.ind = "#696969",  # Individuals color
-                label = "var")
-
 }
 
 pvc2 <- pcnlv$cos2[,1:nfactors]
 pvct <- pcnlv$contrib[,1:nfactors]
 
-if (nfactors == 5){
-  colnames(pvc2) <- c("Adhesion","Relevance","Simplicity","Complexity","Thingy")
-  colnames(pvct) <- c("Adhesion","Relevance","Simplicity","Complexity","Thingy")
-  
-}
-
-
 if (nfactors == 4){
-  colnames(pvc2) <- c("Adhesion","Relevance","Simplicity","Complexity")
-  colnames(pvct) <- c("Adhesion","Relevance","Simplicity","Complexity")
+  colnames(pvc2) <- c("Adhesion","Precision","Simplicity","Trace Profile")
+  colnames(pvct) <- c("Adhesion","Precision","Simplicity","Trace Profile")
 }
 
 if ( nfactors == 3 ){
-  cn3 <- c("Adhesion\n(PCA1)","Thingy\n(PCA2)","Simplicity\n(PCA3)")
+  cn3 <- c("Adhesion\n(PCA1)","Simplicity\n(PCA2)","Entropy\n(PCA3)")
   colnames(pvc2) <- cn3
   colnames(pvct) <- cn3
-  # rnct <- rownames(pvct)
-  # rnct[1] <- c("Activity Ratio Gower (ARG)")
-  # rnct[2] <- c("Trace Ratio Gower 2 (TRG2)")
-  # rnct[3] <- c("Trace Ratio Gower 3 (TRG3)")
-  # rnct[4] <- c("Trace Ratio Gower 4 (TRG4)")
-  # rnct[5] <- c("Structural Simplicity incl. Stochastic (SSS)")
-  # rnct[6] <- c("Structural Simplicity by Entity Count (SSENC)")
-  # rnct[7] <- c("Structural Simplicity by Edge Count  (SSEDC)")
-  # rnct[8] <- c("Generalization by Trace Uniqueness (TGDU)")
-  # rnct[9] <- c("Earth Movers With Play-out Trace (EMT)")
-  # rnct[10] <- c("Trace Probability Mass Overlap (TMO)")
-  # rnct[11] <- c("Play-out Entropy Intersection Precision (HIPT)")
-  # rnct[12] <- c("Play-out Entropy Intersection Fitness (HIFT)")
-  # rnct[13] <- c("Play-out Entropy Project Precision (HJPT)")
-  # rnct[14] <- c("Generalization by Trace Floor 5 (TGF5)")
-  # rnct[15] <- c("Play-out Entropy Project Fitness (HJFT)")
-  # rownames(pvct) <- rnct
-}
-
-if (nfactors == 2){
-  colnames(pvc2) <- c("Adhesion","Simplicity")
-  colnames(pvct) <- c("Adhesion","Simplicity")
+  rnct <- rownames(pvct)
+  rnct[1] <- c("Activity Ratio Gower (ARG)")
+  rnct[2] <- c("Trace Ratio Gower 2 (TRG2)")
+  rnct[3] <- c("Trace Ratio Gower 3 (TRG3)")
+  rnct[4] <- c("Trace Ratio Gower 4 (TRG4)")
+  rnct[5] <- c("Structural Simplicity incl. Stochastic (SSS)")
+  rnct[6] <- c("Structural Simplicity by Entity Count (SSENC)")
+  rnct[7] <- c("Structural Simplicity by Edge Count  (SSEDC)")
+  rnct[8] <- c("Generalization by Trace Uniqueness (TGDU)")
+  rnct[9] <- c("Earth Movers With Play-out Trace (EMT)")
+  rnct[10] <- c("Trace Probability Mass Overlap (TMO)")
+  rnct[11] <- c("Play-out Entropy Intersection Precision (HIPT)")
+  rnct[12] <- c("Play-out Entropy Intersection Fitness (HIFT)")
+  rnct[13] <- c("Play-out Entropy Project Precision (HJPT)")
+  rnct[14] <- c("Generalization by Trace Floor 5 (TGF5)")
+  rnct[15] <- c("Play-out Entropy Project Fitness (HJFT)")
+  rownames(pvct) <- rnct
 }
 
 
@@ -563,9 +560,8 @@ corheatmap(pvct,ctlogns,"contrib")
 
 cvsexpfile <- ''
 if (matchSampleSizes){
-  csvexpfile <- "expn_c4.csv"
+  csvexpfile <- "expn_c2.csv"
 }else{
-  csvexpfile <- "expn_nm_c4.csv"
+  csvexpfile <- "expn_nm_c2.csv"
 }
 write.csv(rdnl, paste(workingPath,csvexpfile,sep=""), row.names=FALSE)
-

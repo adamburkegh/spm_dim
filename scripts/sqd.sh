@@ -9,7 +9,7 @@
 
 export JMEM=50g
 
-module load java/1.8.0_231
+module load java/11.0.15.1
 
 if [[ ! -z ${PBS_O_WORKDIR+epsilon} ]]; then
     cd $PBS_O_WORKDIR
