@@ -1,5 +1,5 @@
 set -e
 
-./gradlew test distZip
+./gradlew test distZip --offline
 
 

@@ -19,9 +19,7 @@ import org.deckfour.xes.classification.XEventClass;
 import org.deckfour.xes.classification.XEventClassifier;
 import org.deckfour.xes.info.XLogInfo;
 import org.deckfour.xes.info.XLogInfoFactory;
-import org.deckfour.xes.model.XEvent;
 import org.deckfour.xes.model.XLog;
-import org.deckfour.xes.model.XTrace;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.directed.petrinet.StochasticNet;
@@ -31,7 +29,6 @@ import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.plugins.pnml.exporting.StochasticNetToPNMLConverter;
 import org.processmining.plugins.pnml.importing.StochasticNetDeserializer;
 import org.processmining.plugins.pnml.simple.PNMLRoot;
-import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -42,11 +39,19 @@ import qut.pm.setm.observer.ExportObserver;
 import qut.pm.setm.parameters.SETMParam;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.AcceptingStochasticNetImpl;
+import qut.pm.spm.FiniteStochasticLangGenerator;
 import qut.pm.spm.Measure;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.log.LogUtil;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.measures.AlphaPrecisionRestrictedMeasure;
+import qut.pm.spm.measures.AlphaPrecisionUnrestrictedMeasure;
 import qut.pm.spm.measures.EarthMoversTraceMeasure;
 import qut.pm.spm.measures.EdgeCount;
 import qut.pm.spm.measures.EntityCount;
+import qut.pm.spm.measures.EntropicRelevanceRestrictedMeasure;
+import qut.pm.spm.measures.EntropicRelevanceUniformMeasure;
+import qut.pm.spm.measures.EntropicRelevanceZeroOrderMeasure;
 import qut.pm.spm.measures.EventRatioMeasure;
 import qut.pm.spm.measures.GenTraceDiffMeasure;
 import qut.pm.spm.measures.GenTraceFloorMeasure;
@@ -57,14 +62,13 @@ import qut.pm.spm.measures.SimplicityEdgeCountMeasure;
 import qut.pm.spm.measures.SimplicityEntityCountMeasure;
 import qut.pm.spm.measures.SimplicityStructuralStochasticUniqMeasure;
 import qut.pm.spm.measures.StochasticLogCachingMeasure;
-import qut.pm.spm.measures.StochasticStructuralUniqueness;
+import qut.pm.spm.measures.StochasticStructuralComplexity;
 import qut.pm.spm.measures.TraceEntropyFitness;
 import qut.pm.spm.measures.TraceEntropyMeasure;
 import qut.pm.spm.measures.TraceEntropyPrecision;
 import qut.pm.spm.measures.TraceEntropyProjectFitness;
 import qut.pm.spm.measures.TraceEntropyProjectPrecision;
 import qut.pm.spm.measures.TraceOverlapRatioMeasure;
-import qut.pm.spm.measures.TraceProbabilityMassOverlap;
 import qut.pm.spm.measures.TraceRatioMeasure;
 import qut.pm.spm.playout.CachingPlayoutGenerator;
 import qut.pm.spm.playout.PlayoutGenerator;
@@ -76,8 +80,10 @@ import qut.pm.xes.helpers.Classifier;
 public class ExperimentRunner {
 
 	private enum RunType {
-		EXISTING_MODEL, EXISTING_MODEL_COLLECTION_SURVIVAL, EXISTING_MODEL_COLLECTION_EVAL, RANDOM_GENERATION,
-		RANDOM_GENERATION_ONLY, GENETIC_MINER, LOG_STATS_ONLY;
+		EXISTING_MODEL, EXISTING_MODEL_COLLECTION_SURVIVAL, 
+		EXISTING_MODEL_COLLECTION_EVAL, 
+		RANDOM_GENERATION, RANDOM_GENERATION_ONLY, 
+		GENETIC_MINER, LOG_STATS_ONLY, EXISTING_RUN_ADD_METRICS;
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -86,14 +92,18 @@ public class ExperimentRunner {
 	private String dataDir = "";
 	private String modelDir = "";
 	private String outputDir = "";
+	private String runDir = "";
 	private String logFileName = "";
 	private String modelInputFileName = "";
 	private String modelInputFilePattern = "";
+	private String runFileInputPattern = "";
 	private Classifier classifierType = Classifier.NAME;
 	private XEventClassifier classifier = classifierType.getEventClassifier();
 	private PluginContext pluginContext = null;
 	private String buildVersion;
 	private List<StochasticLogCachingMeasure> netMeasures;
+	private List<StochasticLogCachingMeasure> exploreMetrics;
+	private List<StochasticLogCachingMeasure> geneticMeasures;
 	private List<ProbProcessTreeMeasure> pptMeasures;
 	private List<SPNQualityCalculator> evalMeasures;
 	private long randomSeed = 1l;
@@ -127,7 +137,9 @@ public class ExperimentRunner {
 		configureRandomGeneration(cfg);
 		configureRunType(cfg);
 		configureGeneticMiner(cfg);
+		configurePreviousRuns(cfg);
 	}
+
 
 	private void configureEval(Properties cfg) {
 		evalMeasures = new ArrayList<>();
@@ -153,14 +165,22 @@ public class ExperimentRunner {
 		modelInputFilePattern = cfg.getProperty(SETMConfiguration.CONFIG_MODEL_INPUT_FILE_PATTERN);
 	}
 
-	private void configureGeneticMiner(Properties cfg) {
+	private void configureGeneticMiner(Properties cfg) throws Exception{
 		if (runType != RunType.GENETIC_MINER)
 			return;
-		setmConfig = new SETMConfiguration();
+		String ffClass = cfg.getProperty(SETMConfiguration.CONFIG_SETM_FITNESS_FUNCTION,"");
+		if ("".equals(ffClass) )
+			setmConfig = new SETMConfiguration();
+		else {
+			Class<?> calcClass = Class.forName("qut.pm.setm.fitness." + ffClass);
+			setmConfig  = (SETMConfiguration) calcClass.getConstructor().newInstance();
+			LOGGER.info("Using genetic miner fitness function {} ", ffClass);
+		}
 		setmConfigParams = setmConfig.configureFromProperties(cfg);
 		setmConfigParams.classifier = classifierType;
 		setmConfigParams.logFileName = logFileName;
 	}
+	
 
 	private void configureRunType(Properties cfg) {
 		runType = RunType
@@ -180,32 +200,44 @@ public class ExperimentRunner {
 	private void configureMeasures(Properties cfg) {
 		playoutGranularity = Long.valueOf(cfg.getProperty(SETMConfiguration.CONFIG_PLAYOUT_GRANULARITY, "1000"));
 		generator = new CachingPlayoutGenerator(playoutGranularity);
-		netMeasures = new ArrayList<>();
-		netMeasures.add(new EventRatioMeasure(generator));
-		netMeasures.add(new TraceRatioMeasure(generator, 2));
-		netMeasures.add(new TraceRatioMeasure(generator, 3));
-		netMeasures.add(new TraceRatioMeasure(generator, 4));
-		netMeasures.add(new EarthMoversTraceMeasure(generator));
+		geneticMeasures = new ArrayList<>();
+		geneticMeasures.add(new EventRatioMeasure(generator));
+		geneticMeasures.add(new TraceRatioMeasure(generator, 2));
+		geneticMeasures.add(new TraceRatioMeasure(generator, 3));
+		geneticMeasures.add(new TraceRatioMeasure(generator, 4));
+		geneticMeasures.add(new EarthMoversTraceMeasure(generator));
 		TraceEntropyMeasure tem = new TraceEntropyMeasure(generator);
-		netMeasures.add(new TraceEntropyPrecision(tem));
-		netMeasures.add(new TraceEntropyFitness(tem));
-		netMeasures.add(new TraceEntropyProjectFitness(tem));
-		netMeasures.add(new TraceEntropyProjectPrecision(tem));
-		netMeasures.add(new TraceOverlapRatioMeasure(generator));
-		netMeasures.add(new TraceProbabilityMassOverlap(generator));
-		netMeasures.add(new GenTraceFloorMeasure(generator, 1));
-		netMeasures.add(new GenTraceFloorMeasure(generator, 5));
-		netMeasures.add(new GenTraceFloorMeasure(generator, 10));
-		netMeasures.add(new GenTraceDiffMeasure(generator));
-		netMeasures.add(new EntityCount());
-		netMeasures.add(new EdgeCount());
-		netMeasures.add(new StochasticStructuralUniqueness());
+		geneticMeasures.add(new TraceEntropyPrecision(tem));
+		geneticMeasures.add(new TraceEntropyFitness(tem));
+		geneticMeasures.add(new TraceEntropyProjectFitness(tem));
+		geneticMeasures.add(new TraceEntropyProjectPrecision(tem));
+		geneticMeasures.add(new TraceOverlapRatioMeasure(generator));
+		geneticMeasures.add(new GenTraceFloorMeasure(generator, 5));
+		geneticMeasures.add(new GenTraceDiffMeasure(generator));
+		geneticMeasures.add(new AlphaPrecisionUnrestrictedMeasure(generator,0));
+		geneticMeasures.add(new AlphaPrecisionUnrestrictedMeasure(generator,1));
+		geneticMeasures.add(new AlphaPrecisionRestrictedMeasure(generator,1));
 		LogStatsCache statsCache = new LogStatsCache();
-		netMeasures.add(new SimplicityEdgeCountMeasure(statsCache));
-		netMeasures.add(new SimplicityEntityCountMeasure(statsCache));
-		netMeasures.add(new SimplicityStructuralStochasticUniqMeasure(statsCache));
+		geneticMeasures.add(new SimplicityEdgeCountMeasure(statsCache));
+		geneticMeasures.add(new SimplicityEntityCountMeasure(statsCache));
+		geneticMeasures.add(new SimplicityStructuralStochasticUniqMeasure(statsCache));
 		pptMeasures = new ArrayList<>();
 		pptMeasures.add(new ProbProcessTreeDeterminismMeasure());
+		// Metrics
+		exploreMetrics = new ArrayList<>();
+		exploreMetrics.add(new StochasticStructuralComplexity());
+		exploreMetrics.add(new EntropicRelevanceUniformMeasure(generator) );
+		exploreMetrics.add(new EntropicRelevanceZeroOrderMeasure(generator) );
+		exploreMetrics.add(new EntropicRelevanceRestrictedMeasure(generator) );
+		exploreMetrics.add(new EntityCount());
+		exploreMetrics.add(new EdgeCount());
+		// dropped measures from conf to journal
+		// netMeasures.add(new TraceProbabilityMassOverlap(generator));
+		// netMeasures.add(new GenTraceFloorMeasure(generator, 1));
+		// netMeasures.add(new GenTraceFloorMeasure(generator, 10));
+		netMeasures = new ArrayList<>();
+		netMeasures.addAll(geneticMeasures);
+		netMeasures.addAll(exploreMetrics);
 	}
 
 	private void configureBuildId() {
@@ -219,23 +251,29 @@ public class ExperimentRunner {
 		}
 	}
 
-	private void initLogInfo(XLog log) {
-		XLogInfoFactory.createLogInfo(log, classifier);
+	private void configurePreviousRuns(Properties cfg) {
+		runDir = cfg.getProperty(SETMConfiguration.CONFIG_INPUT_RUN_FILE_DIR,outputDir);
+		runFileInputPattern = cfg.getProperty(SETMConfiguration.CONFIG_INPUT_RUN_FILE_PATTERN);
 	}
 
-	private XLog loadLog(String inputLogName, TaskStats stats) throws Exception {
+	
+	private void initLogInfo(ProvenancedLog plog) {
+		XLogInfoFactory.createLogInfo(plog, classifier);
+	}
+
+	private ProvenancedLog loadLog(String inputLogName, TaskStats stats) throws Exception {
 		stats.markRunning();
 		String inputLogFileName = dataDir + File.separator + inputLogName;
 		LOGGER.info("Loading log from " + inputLogFileName);
-		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(pluginContext, inputLogFileName);
-		initLogInfo(log);
-		XLogInfo xinfo = log.getInfo(classifier);
+		ProvenancedLog plog = LogUtil.importLog(inputLogFileName,pluginContext);
+		initLogInfo(plog);
+		XLogInfo xinfo = plog.getInfo(classifier);
 		LOGGER.info("Log name: {} Events: {} Activities: {} Traces: {} Total traces: {}",
 				inputLogName, xinfo.getNumberOfEvents(), xinfo.getEventClasses().size(), 
-				xinfo.getNumberOfTraces(), log.size() );
-		stats.setMeasure(Measure.LOG_TRACE_COUNT, log.size());
-		stats.setMeasure(Measure.LOG_EVENT_COUNT, log.getInfo(classifier).getNumberOfEvents());
-		return log;
+				xinfo.getNumberOfTraces(), plog.size() );
+		stats.setMeasure(Measure.LOG_TRACE_COUNT, plog.size());
+		stats.setMeasure(Measure.LOG_EVENT_COUNT, xinfo.getNumberOfEvents());
+		return plog;
 	}
 
 	private AcceptingStochasticNet loadNet(File file) throws Exception {
@@ -265,9 +303,11 @@ public class ExperimentRunner {
 				"Generating " + genModelTarget + " random probabilistic process trees" + " using seed " + randomSeed);
 		List<String> activities = new LinkedList<String>();
 		RunStats runStats = new RunStats(buildVersion, logFileName, "rando-s" + randomSeed);
-		TaskStats stats = makeNewTask(runStats, "spmlogparser");
+		TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
 		try {
-			XLog log = loadLog(logFileName, stats);
+			ProvenancedLog log = loadLog(logFileName, stats);
+			RunCalculator runCalculator = 
+					new RunCalculator(netMeasures, runStatsExporter, log, classifier);
 			deriveActivitiesFromLog(activities, log);
 			RandomProbProcessTreeGenerator modelGen = new RandomProbProcessTreeGenerator(randomSeed, randomMaxDepth,
 					randomMaxTransitions);
@@ -287,9 +327,7 @@ public class ExperimentRunner {
 				AcceptingStochasticNet snet = converter.convertToSNet(model, mname);
 				if (storeRandomModels)
 					storeModel(new File(outputDir + File.separator + "rando-" + mname + ".pnml"), snet);
-				for (StochasticLogCachingMeasure measure : netMeasures) {
-					calculateAndRecordMeasure(log, snet, measure, modelStats);
-				}
+				runCalculator.calculateMeasures(modelStats, snet);
 				for (ProbProcessTreeMeasure measure : pptMeasures) {
 					calculateAndRecordMeasure(log, model, measure, modelStats);
 				}
@@ -305,14 +343,15 @@ public class ExperimentRunner {
 		closeRun(runStats);
 	}
 
+
 	public void runRandomTreeGenerationOnly() {
 		LOGGER.info(
 				"Generating " + genModelTarget + " random probabilistic process trees" + " using seed " + randomSeed);
 		List<String> activities = new LinkedList<String>();
 		RunStats runStats = new RunStats(buildVersion, logFileName, "rando-" + randomSeed);
-		TaskStats stats = makeNewTask(runStats, "spmlogparser");
+		TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
 		try {
-			XLog log = loadLog(logFileName, stats);
+			ProvenancedLog log = loadLog(logFileName, stats);
 			deriveActivitiesFromLog(activities, log);
 			RandomProbProcessTreeGenerator modelGen = new RandomProbProcessTreeGenerator(randomSeed, randomMaxDepth,
 					randomMaxTransitions);
@@ -345,6 +384,45 @@ public class ExperimentRunner {
 		closeRun(runStats);
 	}
 
+	/** 
+	 * Load some existing runs, find the model behind it, calculate some new 
+	 * metric, add it to the run record. 
+	 */
+	public void runPredefAddMetric() throws Exception{
+		// only ones needed for now
+		List<StochasticLogCachingMeasure> extraMetrics = new ArrayList<>();
+		extraMetrics.add(new EntityCount());
+		extraMetrics.add(new EdgeCount());
+		//
+		LOGGER.info("Using run file input directory {}",runDir);
+		String[] runFiles = new File(runDir).list((dir1, name) -> name.matches(runFileInputPattern));
+		LOGGER.info("Loading " + runFiles.length + " run files matching " + runFileInputPattern);
+		// RunStats overallRunStats = new RunStats(buildVersion,logFileName,"runPredefAddMetric");
+		TaskStats loadTask = new TaskStats("loading log");
+		ProvenancedLog log = loadLog(logFileName, loadTask);
+		for (String runFile: runFiles) {
+			File sourceRunFile = new File(runDir + File.separator + runFile);
+			File outRunFile = new File(outputDir + File.separator + runFile);
+			Serializer serializer = new Persister();
+			RunStats sourceRunStats = serializer.read(RunStats.class, sourceRunFile );
+			modelInputFileName = sourceRunStats.getInputModelFileName();
+			String origArtifactCreator = sourceRunStats.getArtifactCreator();
+			RunStats extraRunStats = new RunStats(buildVersion, logFileName, origArtifactCreator);
+			LOGGER.info("Calculating extra measures for model {} against log {} from run {}", 
+					modelInputFileName, logFileName, runFile);
+			RunCalculator runCalculator = 
+					new RunCalculator(extraMetrics, runStatsExporter, log, classifier);
+			AcceptingStochasticNet model = loadModel();
+			runCalculator.justCalculateMeasures(extraRunStats, model);
+			extraRunStats.markEnd();
+			for (TaskStats taskStats: extraRunStats.getTaskRunStats()) {
+				sourceRunStats.addTask(taskStats);
+			}
+			sourceRunStats.markEnd();
+			serializer.write(sourceRunStats, outRunFile);
+		}
+	}
+	
 	private void storeModel(File modelFile, AcceptingStochasticNet stochasticNetDescriptor) throws Exception {
 		StochasticNet net = stochasticNetDescriptor.getNet();
 		PNMLRoot root = new StochasticNetToPNMLConverter().convertNet(net, stochasticNetDescriptor.getInitialMarking(),
@@ -355,18 +433,18 @@ public class ExperimentRunner {
 		serializer.write(root, modelFile);
 	}
 
-	private void calculateAndRecordMeasure(XLog log, ProbProcessTree model, ProbProcessTreeMeasure measure,
+	private void calculateAndRecordMeasure(ProvenancedLog log, ProbProcessTree model, ProbProcessTreeMeasure measure,
 			RunStats runStats) {
-		TaskStats task = makeNewTask(runStats, "calculate " + measure.getReadableId());
+		TaskStats task = runStatsExporter.makeNewTask(runStats, "calculate " + measure.getReadableId());
 		double calc = measure.calculate(log, model, classifier);
 		LOGGER.info("Calculated " + measure.getReadableId() + " == " + calc);
 		task.setMeasure(measure.getMeasure(), calc);
 		task.markEnd();
 	}
 
-	private void calculateAndRecordEvalMeasure(XLog log, AcceptingStochasticNet model, SPNQualityCalculator calculator,
+	private void calculateAndRecordEvalMeasure(ProvenancedLog log, AcceptingStochasticNet model, SPNQualityCalculator calculator,
 			RunStats runStats) throws Exception {
-		TaskStats task = makeNewTask(runStats, "calculate " + calculator.getReadableId());
+		TaskStats task = runStatsExporter.makeNewTask(runStats, "calculate " + calculator.getReadableId());
 		calculator.calculate(pluginContext, model, log, classifier, task);
 		LOGGER.info("Calculated " + calculator.getReadableId());
 		task.markEnd();
@@ -384,12 +462,12 @@ public class ExperimentRunner {
 	public void runPredefinedModelVsLog() {
 		AcceptingStochasticNet model = initModel();
 		RunStats runStats = initPredefRunStats(model, "predef");
-		TaskStats stats = makeNewTask(runStats, "spmlogparser");
+		TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
 		try {
-			XLog log = loadLog(logFileName, stats);
-			for (StochasticLogCachingMeasure measure : netMeasures) {
-				calculateAndRecordMeasure(log, model, measure, runStats);
-			}
+			ProvenancedLog log = loadLog(logFileName, stats);
+			RunCalculator runCalculator = 
+					new RunCalculator(netMeasures, runStatsExporter, log, classifier);
+			runCalculator.calculateMeasures(runStats, model);
 		} catch (Exception e) {
 			closeRunWithError(runStats, e);
 			throw new ExperimentRunException(e);
@@ -407,9 +485,9 @@ public class ExperimentRunner {
 		AcceptingStochasticNet model = initModel();
 		RunStats runStats = initPredefRunStats(model, "pdeval");
 		runStats.setInputModelFileName(modelInputFileName);
-		TaskStats stats = makeNewTask(runStats, "spmlogparser");
+		TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
 		try {
-			XLog log = loadLog(logFileName, stats);
+			ProvenancedLog log = loadLog(logFileName, stats);
 			for (SPNQualityCalculator calculator : evalMeasures) {
 				calculateAndRecordEvalMeasure(log, model, calculator, runStats);
 			}
@@ -449,13 +527,6 @@ public class ExperimentRunner {
 		}
 	}
 
-	private TaskStats makeNewTask(RunStats runStats, String newTaskName) {
-		TaskStats newTaskStats = new TaskStats(newTaskName);
-		newTaskStats.markRunning();
-		runStats.addTask(newTaskStats);
-		return newTaskStats;
-	}
-
 	private void closeRunWithError(RunStats runStats, Exception ex) {
 		LOGGER.error("Run ended due to exception ...");
 		runStats.markFailed(ex.getMessage());
@@ -477,41 +548,33 @@ public class ExperimentRunner {
 		}
 	}
 
-	private void calculateAndRecordMeasure(XLog log, AcceptingStochasticNet model, StochasticLogCachingMeasure measure,
-			RunStats runStats) throws Exception {
-		TaskStats task = makeNewTask(runStats, "calculate " + measure.getReadableId());
-		if (measure.isFlaky())
-			runStatsExporter.exportRun(runStats);
-		double calc = measure.calculate(log, model, classifier);
-		LOGGER.info("Calculated " + measure.getReadableId() + " == " + calc);
-		task.setMeasure(measure.getMeasure(), calc);
-		task.markEnd();
-	}
 
 	public void runGeneticMiner() {
 		String runId = "setm-s" + randomSeed + "ts" + ClockUtil.dateTime();
 		RunStats runStats = new RunStats(buildVersion, logFileName, runId);
 		try {
-			TaskStats stats = makeNewTask(runStats, "spmlogparser");
-			XLog log = loadLog(logFileName, stats);
-			stats = makeNewTask(runStats, "etm");
+			TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
+			ProvenancedLog log = loadLog(logFileName, stats);
+			RunCalculator runCalculator = 
+					new RunCalculator(netMeasures, runStatsExporter, log, classifier);
+			RunCalculator exploreCalc = 
+					new RunCalculator(exploreMetrics, runStatsExporter, log, classifier);
+			stats = runStatsExporter.makeNewTask(runStats, "etm");
 			setmConfigParams.runId = runId;
-			ExportObserver exportObserver = new ExportObserver(runStats, outputDir);
+			ExportObserver exportObserver = new ExportObserver(runStats, exploreCalc );
 			SETMParam etmParamMind = setmConfig.buildETMParam(outputDir, log, setmConfigParams, exportObserver);
 			SETM etmMind = new SETM(etmParamMind);
 			etmMind.run();
 			ProbProcessTree treeMind = etmMind.getResult();
 			etmMind.getSatisfiedTerminationConditions();
 			LOGGER.info("Termination conditions met: " + etmMind.getTerminationDescription());
-			stats = makeNewTask(runStats, "measure");
+			stats = runStatsExporter.makeNewTask(runStats, "measure");
 			String modelName = runId + "-final";
 			RunStats modelStats = new RunStats(buildVersion, logFileName, modelName);
 			ProbProcessTreeConverter converter = new ProbProcessTreeConverter();
 			AcceptingStochasticNet snet = converter.convertToSNet(treeMind, modelName);
 			storeModel(new File(outputDir + File.separator + modelName + ".pnml"), snet);
-			for (StochasticLogCachingMeasure measure : netMeasures) {
-				calculateAndRecordMeasure(log, snet, measure, modelStats);
-			}
+			runCalculator.calculateMeasures(modelStats, snet);
 			for (ProbProcessTreeMeasure measure : pptMeasures) {
 				calculateAndRecordMeasure(log, treeMind, measure, modelStats);
 			}
@@ -522,28 +585,15 @@ public class ExperimentRunner {
 		}
 		closeRun(runStats);
 	}
-
-	private TraceFreq calculateForLog(XLog log, XEventClassifier classifier) {
-		TraceFreq result = new TraceFreq();
-		for (XTrace trace: log) {
-			LinkedList<String> newTrace = new LinkedList<String>();
-			for (XEvent event: trace) {
-				String classId = classifier.getClassIdentity(event);
-				newTrace.add(classId);
-			}
-			result.incTraceFreq(newTrace);
-		}
-		return result;
-	}
 	
 	public void runLogStatsOnly() {
 		String runId = "logstats" + ClockUtil.dateTime();
 		RunStats runStats = new RunStats(buildVersion, logFileName, runId);
 		try {
-			TaskStats stats = makeNewTask(runStats, "spmlogparser");
-			XLog log = loadLog(logFileName, stats);
-			stats = makeNewTask(runStats, "logstats");
-			TraceFreq tf = calculateForLog(log,classifier);
+			TaskStats stats = runStatsExporter.makeNewTask(runStats, "spmlogparser");
+			ProvenancedLog log = loadLog(logFileName, stats);
+			stats = runStatsExporter.makeNewTask(runStats, "logstats");
+			TraceFreq tf = new FiniteStochasticLangGenerator().calculateTraceFreqForLog(log,classifier);
 			LOGGER.info("Trace variants: {}", tf.keySet().size());
 			runStatsExporter.exportRun(runStats);
 		} catch (Exception e) {
@@ -575,6 +625,9 @@ public class ExperimentRunner {
 			break;
 		case LOG_STATS_ONLY:
 			runLogStatsOnly();
+			break;
+		case EXISTING_RUN_ADD_METRICS:
+			runPredefAddMetric();
 			break;
 		default:
 			LOGGER.warn("No support for setting:" + runType);

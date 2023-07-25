@@ -3,7 +3,6 @@ package qut.pm.setm.evaluation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 import org.processmining.earthmoversstochasticconformancechecking.parameters.EMSCParametersLogModelDefault;
 import org.processmining.earthmoversstochasticconformancechecking.parameters.LanguageGenerationStrategyFromModelAbstract;
 import org.processmining.earthmoversstochasticconformancechecking.parameters.LanguageGenerationStrategyFromModelDefault;
@@ -15,6 +14,7 @@ import org.processmining.framework.plugin.ProMCanceller;
 import qut.pm.setm.TaskStats;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.Measure;
+import qut.pm.spm.log.ProvenancedLog;
 
 public class EarthMoversTunedCalculator implements SPNQualityCalculator {
 	
@@ -35,7 +35,7 @@ public class EarthMoversTunedCalculator implements SPNQualityCalculator {
 
 	
 	@Override
-	public void calculate(PluginContext context, AcceptingStochasticNet net, XLog log, 
+	public void calculate(PluginContext context, AcceptingStochasticNet net, ProvenancedLog log, 
 			XEventClassifier classifier, TaskStats stats) throws Exception 
 	{
 		LOGGER.info("Computing earth-movers' distance (SL) with mass coverage: " + MASS_COVERAGE);

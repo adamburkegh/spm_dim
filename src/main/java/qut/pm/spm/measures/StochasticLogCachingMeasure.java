@@ -1,13 +1,17 @@
 package qut.pm.spm.measures;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
+
+import qut.pm.spm.log.ProvenancedLog;
 
 public interface StochasticLogCachingMeasure extends StochasticNetMeasure{
 
-	public void precalculateForLog(XLog log, XEventClassifier classifier) ;
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) ;
 	public default boolean isFlaky() {
 		return false;
+	}
+	public default String format() {
+		return toString();
 	}
 		
 }

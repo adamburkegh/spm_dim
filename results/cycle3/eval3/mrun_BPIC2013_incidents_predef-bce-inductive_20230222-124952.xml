@@ -1,0 +1,272 @@
+<runStats artifactCreator="predef-bce-inductive" machineName="cl5n026" runnerVersion="1.3.0.2023-02-21">
+   <inputLogFileName>BPIC2013_incidents.xes</inputLogFileName>
+   <inputModelFileName>osmodel_bce-inductive_BPIC2013_incidents.pnml</inputModelFileName>
+   <runExportFileName>var/mrun_BPIC2013_incidents_predef-bce-inductive_20230222-124952.xml</runExportFileName>
+   <runDateTime>2023-02-22 12:49:50.695 AEST</runDateTime>
+   <nestedRunStats class="java.util.LinkedList"/>
+   <taskRunStats class="java.util.LinkedList">
+      <taskStats taskName="spmlogparser" runState="RUNNING">
+         <duration>0</duration>
+         <start>1677034190695</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="LOG_EVENT_COUNT">
+            <number class="java.lang.Integer">65533</number>
+         </measureStats>
+         <measureStats measure="LOG_TRACE_COUNT">
+            <number class="java.lang.Integer">7554</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Activity Ratio Gower&apos;s similarity" runState="SUCCESS">
+         <duration>135</duration>
+         <start>1677034191499</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="EVENT_RATIO_GOWER">
+            <number class="java.lang.Double">0.04804261079200953</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (2) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>113</duration>
+         <start>1677034191634</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_RATIO_GOWER_2">
+            <number class="java.lang.Double">0.00428009591201633</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (3) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>110</duration>
+         <start>1677034191747</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_RATIO_GOWER_3">
+            <number class="java.lang.Double">0.006411993106805663</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Ratio (4) Gower&apos;s similarity" runState="SUCCESS">
+         <duration>109</duration>
+         <start>1677034191857</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_RATIO_GOWER_4">
+            <number class="java.lang.Double">0.01676274258968668</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Earth movers&apos; distance by trace" runState="SUCCESS">
+         <duration>15</duration>
+         <start>1677034191966</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="EARTH_MOVERS_TRACEWISE">
+            <number class="java.lang.Double">0.0027799841143961723</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Precision" runState="SUCCESS">
+         <duration>15</duration>
+         <start>1677034191981</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPY_PRECISION_TRACEWISE">
+            <number class="java.lang.Double">0.3011156847042955</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Fitness" runState="SUCCESS">
+         <duration>3</duration>
+         <start>1677034191996</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPY_FITNESS_TRACEWISE">
+            <number class="java.lang.Double">0.307373374092007</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Projection Fitness" runState="SUCCESS">
+         <duration>2</duration>
+         <start>1677034191999</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPY_FITNESS_TRACEPROJECT">
+            <number class="java.lang.Double">0.0049971019938066935</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Entropy Projection Precision" runState="SUCCESS">
+         <duration>2</duration>
+         <start>1677034192001</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPY_PRECISION_TRACEPROJECT">
+            <number class="java.lang.Double">0.012820715114645519</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Trace Overlap Ratio" runState="SUCCESS">
+         <duration>15</duration>
+         <start>1677034192003</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_OVERLAP_RATIO">
+            <number class="java.lang.Double">0.0027799841143764893</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace floor (5)" runState="SUCCESS">
+         <duration>15</duration>
+         <start>1677034192018</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_GENERALIZATION_FLOOR_5">
+            <number class="java.lang.Double">0.0013238019592268996</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Generalization by trace uniqueness diff" runState="SUCCESS">
+         <duration>16</duration>
+         <start>1677034192033</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="TRACE_GENERALIZATION_DIFF_UNIQ">
+            <number class="java.lang.Double">0.0019857029388403494</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entity count" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1677034192049</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="MODEL_ENTITY_COUNT">
+            <number class="java.lang.Double">10.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Edge count" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1677034192049</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="MODEL_EDGE_COUNT">
+            <number class="java.lang.Double">12.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Alpha Precision Unrestricted alpha-sig 0.0" runState="SUCCESS">
+         <duration>14</duration>
+         <start>1677034192049</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ALPHA_PRECISION_UNRESTRICTED_ZERO">
+            <number class="java.lang.Double">0.008</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Alpha Precision Unrestricted alpha-sig 0.01" runState="SUCCESS">
+         <duration>14</duration>
+         <start>1677034192063</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ALPHA_PRECISION_UNRESTRICTED_1_PCT">
+            <number class="java.lang.Double">0.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Alpha Precision Restricted alpha-sig 0.01" runState="SUCCESS">
+         <duration>18</duration>
+         <start>1677034192077</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ALPHA_PRECISION_RESTRICTED_1_PCT">
+            <number class="java.lang.Double">0.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by edge count" runState="SUCCESS">
+         <duration>13</duration>
+         <start>1677034192095</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_EDGE_COUNT">
+            <number class="java.lang.Double">0.9920582395764395</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by entity count" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1677034192108</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_ENTITY_COUNT">
+            <number class="java.lang.Double">0.9933818663136995</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Simplicity by stochastic structural uniqueness" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1677034192108</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="STRUCTURAL_SIMPLICITY_STOCHASTIC">
+            <number class="java.lang.Double">0.9808074123097287</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Stochastic Structural Uniqueness" runState="SUCCESS">
+         <duration>0</duration>
+         <start>1677034192108</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY">
+            <number class="java.lang.Double">29.0</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entropic Relevance Uniform" runState="SUCCESS">
+         <duration>20</duration>
+         <start>1677034192108</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPIC_RELEVANCE_UNIFORM">
+            <number class="java.lang.Double">22.491695760388183</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entropic Relevance Zero Order" runState="SUCCESS">
+         <duration>21</duration>
+         <start>1677034192128</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPIC_RELEVANCE_ZERO_ORDER">
+            <number class="java.lang.Double">16.393221163537095</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entropic Relevance Restricted Zero Order" runState="SUCCESS">
+         <duration>26</duration>
+         <start>1677034192149</start>
+         <errorMessage></errorMessage>
+         <note></note>
+         <measureStats measure="ENTROPIC_RELEVANCE_RESTRICTED_ZO">
+            <number class="java.lang.Double">16.39321794370381</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Earth Movers Similarity Tuned" runState="SUCCESS">
+         <duration>354687</duration>
+         <start>1598579129409</start>
+         <errorMessage></errorMessage>
+         <note>Copied from C:\Users\burkeat\bpm\bpm-dimensions-lab\results\cycle2\eval2\mrun_BPIC2013_incidents_predef-bce-inductive_20220605-014813.xml on Mon Feb 27 09:58:39 AEST 2023</note>
+         <measureStats measure="EARTH_MOVERS_LIGHT_COVERAGE">
+            <number class="java.lang.Double">0.2588710927144896</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entropy Precision and Recall" runState="SUCCESS">
+         <duration>5326</duration>
+         <start>1598579484112</start>
+         <errorMessage></errorMessage>
+         <note>Copied from C:\Users\burkeat\bpm\bpm-dimensions-lab\results\cycle2\eval2\mrun_BPIC2013_incidents_predef-bce-inductive_20220605-014813.xml on Mon Feb 27 09:58:43 AEST 2023</note>
+         <measureStats measure="ENTROPY_RECALL">
+            <number class="java.lang.Double">0.8816989651358932</number>
+         </measureStats>
+         <measureStats measure="ENTROPY_PRECISION">
+            <number class="java.lang.Double">0.010730780411071684</number>
+         </measureStats>
+      </taskStats>
+      <taskStats taskName="calculate Entropy Precision and Recall" runState="SUCCESS">
+         <duration>5326</duration>
+         <start>1598579484112</start>
+         <errorMessage></errorMessage>
+         <note>Copied from C:\Users\burkeat\bpm\bpm-dimensions-lab\results\cycle2\eval2\mrun_BPIC2013_incidents_predef-bce-inductive_20220605-014813.xml on Mon Feb 27 09:58:47 AEST 2023</note>
+         <measureStats measure="ENTROPY_RECALL">
+            <number class="java.lang.Double">0.8816989651358932</number>
+         </measureStats>
+         <measureStats measure="ENTROPY_PRECISION">
+            <number class="java.lang.Double">0.010730780411071684</number>
+         </measureStats>
+      </taskStats>
+   </taskRunStats>
+   <errorMessage></errorMessage>
+   <runState>SUCCESS</runState>
+</runStats>

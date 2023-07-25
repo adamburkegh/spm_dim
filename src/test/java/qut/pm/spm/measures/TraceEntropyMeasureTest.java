@@ -10,7 +10,6 @@ import org.deckfour.xes.model.XLog;
 import org.junit.Before;
 import org.junit.Test;
 import org.processmining.framework.plugin.PluginContext;
-import org.processmining.xeslite.plugin.OpenLogFileLiteImplPlugin;
 
 import qut.pm.prom.helpers.ConsoleUIPluginContext;
 import qut.pm.prom.helpers.HeadlessDefinitelyNotUIPluginContext;
@@ -19,6 +18,9 @@ import qut.pm.prom.helpers.PetrinetExportUtils;
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.TraceFreq;
 import qut.pm.spm.TraceFreqTest;
+import qut.pm.spm.log.LogUtil;
+import qut.pm.spm.log.ProvenancedLog;
+import qut.pm.spm.log.ProvenancedLogImpl;
 import qut.pm.spm.measures.TraceEntropyMeasure.TraceEntropyMeasurement;
 import qut.pm.spm.playout.StochasticPlayoutGenerator;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
@@ -42,7 +44,7 @@ public class TraceEntropyMeasureTest {
 	
 	@Test
 	public void emptyLog() {
-		XLog log = converter.convertTextArgs();
+		ProvenancedLog log = plog();
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertMeasureEquals(0.0d, log,net);
@@ -50,7 +52,7 @@ public class TraceEntropyMeasureTest {
 
 	@Test
 	public void matchingSingletonLogModel() {
-		XLog log = converter.convertTextArgs("a");
+		ProvenancedLog log = plog("a");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a 2.0} -> End");
 		assertMeasureEquals(0.0d, log,net);
@@ -58,7 +60,7 @@ public class TraceEntropyMeasureTest {
 
 	@Test
 	public void matchingHalfHalfLogModel() {
-		XLog log = converter.convertTextArgs("a b","c d");
+		ProvenancedLog log = plog("a b","c d");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a} -> p1 -> {b} -> End");
 		parser.addToAcceptingNet(net,
@@ -69,7 +71,7 @@ public class TraceEntropyMeasureTest {
 	
 	@Test
 	public void logSmallerPerfectFitness() {
-		XLog log = converter.convertTextArgs("a b","c d");
+		ProvenancedLog log = plog("a b","c d");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a} -> p1 -> {b} -> End");
 		parser.addToAcceptingNet(net,
@@ -81,7 +83,7 @@ public class TraceEntropyMeasureTest {
 
 	@Test
 	public void modelSmallerPerfectFitness() {
-		XLog log = converter.convertTextArgs("a b","c d","e f");
+		ProvenancedLog log = plog("a b","c d","e f");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a} -> p1 -> {b} -> End");
 		parser.addToAcceptingNet(net,
@@ -91,7 +93,7 @@ public class TraceEntropyMeasureTest {
 
 	@Test
 	public void wideChoiceIntersection() {
-		XLog log = converter.convertTextArgs("a b","c d","e f",
+		ProvenancedLog log = plog("a b","c d","e f",
 											 "a b","c d","e f");
 		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
 			 	  "Start -> {a} -> p1 -> {b} -> End");
@@ -109,7 +111,7 @@ public class TraceEntropyMeasureTest {
 		// This test is an example net with intersectionEntropy greater than logEntropy
 		// Rounding in the measure limits to 1.0 
 		AcceptingStochasticNet anet = PetrinetExportUtils.readStochasticPNMLModel("src/test/resources/setm-s1ts20210623-115014-final.pnml");
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		TraceEntropyFitness traceEntropyFitnessMeasure = new TraceEntropyFitness(measure);
 		double mc = traceEntropyFitnessMeasure.calculate(log,anet, NAME_CLASSIFIER);
 		// logEntropy 					~= 4.20 
@@ -149,7 +151,7 @@ public class TraceEntropyMeasureTest {
 		ppt.addChild(pptConc1);
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		measure = new TraceEntropyMeasure(new StochasticPlayoutGenerator(1000));
 		TraceEntropyPrecision traceEntropyPrecisionMeasure = new TraceEntropyPrecision(measure);
 		double mc = traceEntropyPrecisionMeasure.calculate(log,snet, NAME_CLASSIFIER);
@@ -180,7 +182,7 @@ public class TraceEntropyMeasureTest {
 		ppt.addChild(pptSeq1);
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		measure = new TraceEntropyMeasure(new StochasticPlayoutGenerator(1000));
 		TraceEntropyPrecision traceEntropyPrecisionMeasure = new TraceEntropyPrecision(measure);
 		double mc = traceEntropyPrecisionMeasure.calculate(log,snet, NAME_CLASSIFIER);
@@ -211,7 +213,7 @@ public class TraceEntropyMeasureTest {
 		ppt.addChild(pptSeq1);
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		measure = new TraceEntropyMeasure(new StochasticPlayoutGenerator(1000));
 		TraceEntropyPrecision traceEntropyPrecisionMeasure = new TraceEntropyPrecision(measure);
 		double mc = traceEntropyPrecisionMeasure.calculate(log,snet, NAME_CLASSIFIER);
@@ -252,7 +254,7 @@ public class TraceEntropyMeasureTest {
 		ppt.addChild(pptSeq1);
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		measure = new TraceEntropyMeasure(new StochasticPlayoutGenerator(1000));
 		TraceEntropyPrecision traceEntropyPrecisionMeasure = new TraceEntropyPrecision(measure);
 		double mc = traceEntropyPrecisionMeasure.calculate(log,snet, NAME_CLASSIFIER);
@@ -494,7 +496,7 @@ public class TraceEntropyMeasureTest {
 		ppt.addChild( ProbProcessTreeFactory.createLeaf("Accepted", 51 ) ) ;
 		ProbProcessTreeConverter pptConverter = new ProbProcessTreeConverter();
 		AcceptingStochasticNet snet = pptConverter.convertToSNet(ppt);
-		XLog log = loadBPIC2013_closed();
+		ProvenancedLog log = loadBPIC2013_closed();
 		StochasticPlayoutGenerator generator = new StochasticPlayoutGenerator(1000);
 		measure = new TraceEntropyMeasure(generator);
 		TraceEntropyMeasurement tem = measure.calculateTraceEntropyMeasure(log,snet,NAME_CLASSIFIER);
@@ -523,21 +525,27 @@ public class TraceEntropyMeasureTest {
 		assertEquals(0.8122d,tem.getEntropyProjectFitness(),EPSILON);
 	}
 
-	private XLog loadBPIC2013_closed() throws Exception {
+	private ProvenancedLog loadBPIC2013_closed() throws Exception {
 		return loadResourceLog("BPIC2013_closed.xes" );
 	}
 	
-	private XLog loadResourceLog(String logName) throws Exception {
+	private ProvenancedLog loadResourceLog(String logName) throws Exception {
 		PluginContext uipc = 
 				new HeadlessDefinitelyNotUIPluginContext(new ConsoleUIPluginContext(), "spn_converter");	
-		XLog log = (XLog) new OpenLogFileLiteImplPlugin().importFile(uipc, 
-									"src" + File.separator + "test" + File.separator 
-								   + "resources" + File.separator + logName);
+		ProvenancedLog log = LogUtil.importLog(		"src" + File.separator + "test" + File.separator 
+								   + "resources" + File.separator + logName,
+								   uipc);
 		return log;
 	}	
 	
-	private void assertMeasureEquals(double expected, XLog log, AcceptingStochasticNet net) {
+	private void assertMeasureEquals(double expected, ProvenancedLog log, AcceptingStochasticNet net) {
 		assertEquals(expected, measure.calculate(log,net, NAME_CLASSIFIER), EPSILON);
+	}
+
+	private ProvenancedLog plog(String ... args) {
+		XLog log = converter.convertTextArgs(args);
+		ProvenancedLog plog = new ProvenancedLogImpl(log,"testDummyFileName");
+		return plog;
 	}
 	
 }

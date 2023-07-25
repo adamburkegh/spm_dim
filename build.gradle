@@ -116,9 +116,34 @@ jar {
 
 
 group = 'qut.pm'
-version = '1.2.6'
-description = 'spmdim'
-sourceCompatibility = '1.8'
+version = '1.3.5'
+description = 'sqdimensions'
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+
+task(copyTask, dependsOn: 'classes', type: JavaExec) {
+   main 'qut.pm.setm.results.CopyTask'
+   classpath sourceSets.main.runtimeClasspath
+}
+
+task(copyTaskByMeasure, dependsOn: 'classes', type: JavaExec) {
+   main 'qut.pm.setm.results.CopyTaskByMeasure'
+   classpath sourceSets.main.runtimeClasspath
+}
+
+
+task(addNote, dependsOn: 'classes', type: JavaExec) {
+   main 'qut.pm.setm.results.AddNote'
+   classpath sourceSets.main.runtimeClasspath
+}
+
+
+task(pnmlToDot, dependsOn: 'classes', type: JavaExec) {
+   main 'qut.pm.prom.helpers.PetriNetConverter'
+   classpath sourceSets.main.runtimeClasspath
+   args '-v -i PNML'
+}
 
 
 applicationDistribution.from('config') {

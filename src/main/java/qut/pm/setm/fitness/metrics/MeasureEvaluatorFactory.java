@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 import org.uncommons.watchmaker.framework.FitnessEvaluator;
 
 import qut.pm.setm.observer.ExportObserver;
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.measures.StochasticLogCachingMeasure;
 import qut.pm.spm.ppt.ProbProcessTree;
 import qut.pm.spm.ppt.ProbProcessTreeConverter;
@@ -26,13 +26,13 @@ public class MeasureEvaluatorFactory {
 	private static class MeasureBridge implements FitnessEvaluator<ProbProcessTree>{
 
 		private StochasticLogCachingMeasure measure;
-		private XLog log;
+		private ProvenancedLog log;
 		private XEventClassifier classifier;
 		private ProbProcessTreeConverter converter = new ProbProcessTreeConverter(); 
 		private Map<ProbProcessTree,AcceptingStochasticNet> netCache;
 		private ExportObserver exportObserver;
 		
-		public MeasureBridge(StochasticLogCachingMeasure measure, XLog log, 
+		public MeasureBridge(StochasticLogCachingMeasure measure, ProvenancedLog log, 
 							 XEventClassifier classifier,
 							 Map<ProbProcessTree,AcceptingStochasticNet> netCache,
 							ExportObserver exportObserver)
@@ -80,7 +80,7 @@ public class MeasureEvaluatorFactory {
 	
 	
 	public FitnessEvaluator<ProbProcessTree> createEvaluator(StochasticLogCachingMeasure measure, 
-															 XLog log, XEventClassifier classifier)
+			ProvenancedLog log, XEventClassifier classifier)
 	{
 		MeasureBridge bridge = new MeasureBridge(measure,log,classifier,netCache, exportObserver);
 		bridge.precalculateForLog();

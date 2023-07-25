@@ -3,10 +3,10 @@ package qut.pm.spm.measures;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.classification.XEventClassifier;
-import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.PlayoutGenerator;
 import qut.pm.spm.playout.StochasticPlayoutGenerator;
 
@@ -15,11 +15,11 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 
 	private static Logger LOGGER = LogManager.getLogger();
 	
-	protected XLog log;
+	protected volatile ProvenancedLog log;
 	protected XEventClassifier classifier;
 	
 	protected PlayoutGenerator generator;
-	protected TraceFreq playoutLog; // TODO concurrency risk
+	protected TraceFreq playoutLog; // note concurrency risk
 
 	public AbstractStochasticLogCachingMeasure(PlayoutGenerator generator) {
 		this.generator = generator;
@@ -35,7 +35,7 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 	 * @param classifier
 	 * @return whether cached value was used
 	 */
-	protected boolean validateLogCache(XLog log, XEventClassifier classifier) {
+	protected boolean validateLogCache(ProvenancedLog log, XEventClassifier classifier) {
 		if (this.log == log && this.classifier == classifier)
 			return true;
 		this.log = log;
@@ -43,7 +43,7 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 		return false;
 	}
 
-	public double calculate(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		LOGGER.debug("Calculating ...");
 		precalculateForLog(log,classifier);
 		int traceCt = log.size();
@@ -53,6 +53,4 @@ public abstract class AbstractStochasticLogCachingMeasure implements StochasticL
 	}
 
 	protected abstract double calculateForPlayout(TraceFreq playoutLog);
-	
-
 }

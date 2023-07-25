@@ -17,6 +17,7 @@ import org.simpleframework.xml.core.Persister;
 import org.uncommons.watchmaker.framework.EvolutionObserver;
 import org.uncommons.watchmaker.framework.PopulationData;
 
+import qut.pm.setm.RunCalculator;
 import qut.pm.setm.RunStats;
 import qut.pm.setm.RunStatsExporter;
 import qut.pm.setm.TaskStats;
@@ -77,13 +78,16 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 	private String runId;
 	private Map<TreeMeasureKey,Double> currentGenerationResults = new ConcurrentHashMap<>();
 	private long durationThreshold = 5000;
+	private RunCalculator runCalc;
 	
-	public ExportObserver(RunStats runStats, String outputPath) {
+	public ExportObserver(RunStats runStats, RunCalculator runCalc) 
+	{
 		this.runStats = runStats;
 		this.runId = runStats.getArtifactCreator();
-		runStatsExporter = new RunStatsExporter(outputPath);
-		modelPath = outputPath + File.separator + runId;
+		runStatsExporter = runCalc.getRunStatsExporter();
+		modelPath = runStatsExporter.getOutputDir() + File.separator + runId;
 		createOutputDir();
+		this.runCalc = runCalc;
 	}
 	
 	private void createOutputDir() {
@@ -120,15 +124,8 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 			storeModel(new File(modelPath + File.separator + modelName + ".pnml"),snet);
 			RunStats modelRunStats = 
 					new RunStats(runStats.getBuildVersion(),runStats.getInputLogFileName(),modelName);
-			TaskStats taskStats = new TaskStats("collateMeasures-" + modelName);
-			taskStats.markRunning();
-			for (Measure measure: Measure.values()) {
-				Double val = currentGenerationResults.get( new TreeMeasureKey(data.getBestCandidate(), measure) );
-				if (val != null)
-					taskStats.setMeasure(measure,val);
-			}
-			taskStats.markEnd();
-			modelRunStats.addTask(taskStats);
+			collateMeasures(data, modelName, modelRunStats);
+			calculateExplorationMeasures(snet,modelName,modelRunStats);
 			modelRunStats.markEnd();
 			runStats.addSubRun(modelRunStats);
 			runStatsExporter.exportRun(runStats);
@@ -137,6 +134,30 @@ public class ExportObserver implements EvolutionObserver<ProbProcessTree>{
 			LOGGER.info("Failed model was:" + data.getBestCandidate());
 		}
 		resetCurrentGenerationMeasures();
+	}
+
+	private void calculateExplorationMeasures(AcceptingStochasticNet snet, 
+			String modelName, RunStats modelRunStats) 
+				throws Exception
+	{
+		TaskStats taskStats = new TaskStats("collateExplMeasures-" + modelName);
+		taskStats.markRunning();
+		runCalc.justCalculateMeasures(modelRunStats, snet);
+		taskStats.markEnd();
+		modelRunStats.addTask(taskStats);		
+	}
+
+	private void collateMeasures(PopulationData<? extends ProbProcessTree> data, String modelName,
+			RunStats modelRunStats) {
+		TaskStats taskStats = new TaskStats("collateMeasures-" + modelName);
+		taskStats.markRunning();
+		for (Measure measure: Measure.values()) {
+			Double val = currentGenerationResults.get( new TreeMeasureKey(data.getBestCandidate(), measure) );
+			if (val != null)
+				taskStats.setMeasure(measure,val);
+		}
+		taskStats.markEnd();
+		modelRunStats.addTask(taskStats);
 	}
 
 	private void resetCurrentGenerationMeasures() {

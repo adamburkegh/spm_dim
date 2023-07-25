@@ -31,6 +31,7 @@ import org.processmining.models.semantics.petrinet.Marking;
 import org.processmining.models.semantics.petrinet.impl.EfficientPetrinetSemanticsImpl;
 
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.FiniteStochasticLang;
 import qut.pm.spm.NumUtils;
 import qut.pm.spm.SPMConfigException;
 import qut.pm.spm.TraceFreq;
@@ -50,6 +51,9 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 
 		@Override
 		public int compare(TimedTransition tran1, TimedTransition tran2) {
+			if (tran1.isInvisible() != tran2.isInvisible()) {
+				return tran1.isInvisible()? -1 : 1;
+			}
 			Integer alloc1 = pathAllocation.get(tran1);
 			Integer alloc2 = pathAllocation.get(tran2);
 			Integer lw1 = leftoverTracker.getOrDefault(tran1,0);
@@ -72,15 +76,15 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 		public long targetSize;
 		public Marking ctMarking; 
 		public LightTrace parentTrace;
-		public int traceLength;
+		public int pathLength;
 		
-		public PlayoutState(long targetSize, Marking ctMarking, LightTrace parentTrace, int traceLength) 
+		public PlayoutState(long targetSize, Marking ctMarking, LightTrace parentTrace, int pathLength) 
 		{
 			super();
 			this.targetSize = targetSize;
 			this.ctMarking = ctMarking;
 			this.parentTrace = parentTrace;
-			this.traceLength = traceLength;
+			this.pathLength = pathLength;
 		}
 		
 	}
@@ -88,7 +92,7 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 	private static Logger LOGGER = LogManager.getLogger();
 	
 	private static final int TRACE_PROGRESS_INCREMENT = 500;
-	private static final int DEFAULT_MAX_TRACE_LENGTH = 5000;
+	private static final int DEFAULT_MAX_TRACE_LENGTH = 500;
 	private static final int DEFAULT_TARGET_SIZE = 1000;
 	
 	private static final int LOGGING_THRESHOLD = 100;
@@ -155,16 +159,26 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 	 * @return
 	 */
 	@Override
+	public FiniteStochasticLang buildPlayoutFSL(AcceptingStochasticNet net, long targetSize) {
+		LightLog result = buildPlayoutLightLog(net, targetSize);
+		return result.convertToFiniteStochasticLang();
+	}
+	
+	@Override
+	public FiniteStochasticLang buildPlayoutFSL(AcceptingStochasticNet net) {
+		return buildPlayoutFSL(net,getTargetSize());
+	}
+
+	@Override
 	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net, long targetSize) {
 		LightLog result = buildPlayoutLightLog(net, targetSize);
-		return result.convertToTraceFreq();
+		return result.convertToFiniteStochasticLang().getTraceFrequency();
 	}
 	
 	@Override
 	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net) {
 		return buildPlayoutTraceFreq(net,getTargetSize());
 	}
-
 
 	private LightLog buildPlayoutLightLog(AcceptingStochasticNet net, long targetSize) {
 		track(targetSize, "Generating playout log for net " + net.getId() 
@@ -185,7 +199,7 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 			logUnion(result, 
 					 buildPlayoutLog(calcStack,net,semantics, leftoverTracker,
 							ctState.targetSize,ctState.ctMarking, 
-							ctState.parentTrace, ctState.traceLength));
+							ctState.parentTrace, ctState.pathLength));
 			if (result.size() > progressTrack) {
 				track(targetSize, "Generated " + result.size() + " of " + targetSize + " "
 						+ "traces for net " + net.getId() + " with " + targetSize + " traces");
@@ -249,7 +263,7 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 	public LightLog buildPlayoutLog(Stack<PlayoutState> calcStack, AcceptingStochasticNet net, 
 			EfficientPetrinetSemantics semantics,
 			Map<TimedTransition,Integer> leftoverTracker,
-			long targetSize, Marking ctMarking, LightTrace parentTrace, int traceLength) 
+			long targetSize, Marking ctMarking, LightTrace parentTrace, int pathLength) 
 	{	
 		if (targetSize < 0) {
 			LOGGER.error("Negative target size");
@@ -257,7 +271,7 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 		}
 		if (targetSize == 0)
 			return new LightLog();
-		if (traceLength >= maxTraceLength){
+		if (pathLength >= maxTraceLength){
 			maxTraceLengthWarn(net);
 			LightTrace newTrace = new LightTrace(parentTrace);
 			newTrace.forceTruncate();
@@ -282,7 +296,7 @@ public class StochasticPlayoutGenerator implements PlayoutGenerator {
 			LightTrace trace = generateTraceWithEvent(parentTrace, tran);
 			semantics.directExecuteExecutableTransition(tran);
 			PlayoutState newState = new PlayoutState(sublogBudget, semantics.getStateAsMarking(), 
-					  								 trace, traceLength+1);
+					  								 trace, pathLength+1);
 			calcStack.push(newState);
 			allocated += sublogBudget;
 		}	

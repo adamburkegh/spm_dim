@@ -43,7 +43,7 @@ public class BasicOverallFitness implements FitnessEvaluator<ProbProcessTree> {
 
 
 	public void addEvaluator(FitnessEvaluator<ProbProcessTree> evaluator, double weight) {
-		evaluators.put(evaluator, new Double(weight));
+		evaluators.put(evaluator, weight);
 	}
 
 	/**

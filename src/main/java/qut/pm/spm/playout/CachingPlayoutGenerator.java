@@ -9,13 +9,14 @@ import org.apache.logging.log4j.Logger;
 import org.deckfour.xes.model.XLog;
 
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.FiniteStochasticLang;
 import qut.pm.spm.TraceFreq;
 
 public class CachingPlayoutGenerator implements PlayoutGenerator{
 
 	private static Logger LOGGER = LogManager.getLogger();
 	
-	// TODO probably redundant
+	// probably redundant
 	private static class Key{
 		public AcceptingStochasticNet net;
 		public Long targetSize;
@@ -60,7 +61,7 @@ public class CachingPlayoutGenerator implements PlayoutGenerator{
 	
 	private PlayoutGenerator generator;
 	private Map<Key,XLog> xlogCache = Collections.synchronizedMap( new WeakHashMap<>() );
-	private Map<Key,TraceFreq> tfCache = Collections.synchronizedMap( new WeakHashMap<>() );
+	private Map<Key,FiniteStochasticLang> tfCache = Collections.synchronizedMap( new WeakHashMap<>() );
 	
 	public CachingPlayoutGenerator(long targetSize) {
 		generator = new StochasticPlayoutGenerator(targetSize);
@@ -87,12 +88,12 @@ public class CachingPlayoutGenerator implements PlayoutGenerator{
 
 	
 	@Override
-	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net, long targetSize) {
+	public FiniteStochasticLang buildPlayoutFSL(AcceptingStochasticNet net, long targetSize) {
 		LOGGER.debug("Checking cached playout log");
 		Key key = new Key(net,targetSize);
-		TraceFreq result = tfCache.get( key );
+		FiniteStochasticLang result = tfCache.get( key );
 		if (result == null) {
-			result = generator.buildPlayoutTraceFreq(net,targetSize);
+			result = generator.buildPlayoutFSL(net,targetSize);
 			tfCache.put(key,result);
 		}else {
 			LOGGER.debug("Using cached playout log");
@@ -101,10 +102,19 @@ public class CachingPlayoutGenerator implements PlayoutGenerator{
 	}
 	
 	@Override
-	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net) {
-		return buildPlayoutTraceFreq(net,getTargetSize());
+	public FiniteStochasticLang buildPlayoutFSL(AcceptingStochasticNet net) {
+		return buildPlayoutFSL(net,getTargetSize());
 	}
 
+	@Override 
+	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net, long targetSize) {
+		return buildPlayoutFSL(net,targetSize).getTraceFrequency();
+	}
+	
+	@Override 
+	public TraceFreq buildPlayoutTraceFreq(AcceptingStochasticNet net) {
+		return buildPlayoutFSL(net).getTraceFrequency();
+	}
 	
 	@Override
 	public long getTargetSize() {

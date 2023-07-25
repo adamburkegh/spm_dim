@@ -12,9 +12,11 @@ import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 
 import qut.pm.spm.AcceptingStochasticNet;
+import qut.pm.spm.MathUtils;
 import qut.pm.spm.Measure;
 import qut.pm.spm.NumUtils;
 import qut.pm.spm.TraceFreq;
+import qut.pm.spm.log.ProvenancedLog;
 import qut.pm.spm.playout.PlayoutGenerator;
 import qut.pm.spm.playout.StochasticPlayoutGenerator;
 
@@ -67,7 +69,6 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 	}
 	
 	private static Logger LOGGER = LogManager.getLogger();
-	private static final double LOG2 = Math.log(2);
 	private static final List<String> EMPTY_TRACE = new ArrayList<String>();
 	
 	protected XLog log;
@@ -85,7 +86,7 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 		this( new StochasticPlayoutGenerator() );
 	}
 	
-	protected boolean validateLogCache(XLog log, XEventClassifier classifier) {
+	protected boolean validateLogCache(ProvenancedLog log, XEventClassifier classifier) {
 		if (this.log == log && this.classifier == classifier)
 			return true;
 		this.log = log;
@@ -96,7 +97,7 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 	/**
 	 * Can be reused in concurrent context only with same log. 
 	 */
-	public void precalculateForLog(XLog log, XEventClassifier classifier) {
+	public void precalculateForLog(ProvenancedLog log, XEventClassifier classifier) {
 		if (!validateLogCache(log, classifier))
 			traceFreqLog = preCalculateForLog(log, classifier);
 	}
@@ -182,12 +183,12 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 	}
 	
 	@Override
-	public double calculate(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
+	public double calculate(ProvenancedLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		TraceFreq playoutLog = generateAndScale(log, net, classifier);
 		return calculateForPlayout(playoutLog);
 	}
 
-	private TraceFreq generateAndScale(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
+	private TraceFreq generateAndScale(ProvenancedLog  log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		LOGGER.debug("Calculating ...");
 		precalculateForLog(log,classifier);
 		int traceCt = log.size();
@@ -196,7 +197,7 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 		return playoutLog;
 	}
 	
-	public TraceEntropyMeasurement calculateTraceEntropyMeasure(XLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
+	public TraceEntropyMeasurement calculateTraceEntropyMeasure(ProvenancedLog log, AcceptingStochasticNet net, XEventClassifier classifier) {
 		TraceFreq playoutLog = generateAndScale(log, net, classifier);
 		return calculateTraceEntropyMeasures(playoutLog);
 	}
@@ -210,7 +211,7 @@ public class TraceEntropyMeasure implements StochasticLogCachingMeasure {
 			double prob = (double)traceFreq.getFreq(trace)/(double)traceFreq.getTraceTotal();
 			if (prob <= 0.0) // convention that log 0 == 0
 				continue;
-			entropy += prob * Math.log(prob) / LOG2;
+			entropy += prob * MathUtils.log2(prob);
 		}
 		return -1.0d * entropy;
 	}

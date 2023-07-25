@@ -203,6 +203,18 @@ public class StochasticPlayoutGeneratorTest {
 		XLog expected = converter.convertTextArgs("a","a","a","a","b"); 
 		assertLogEquals(log, expected);
 	}
+
+	@Test
+	public void leftoverLexicalWithSilent() {
+		AcceptingStochasticNet net = parser.createAcceptingNet("net", 
+				  					  "Start -> {a 9.0} -> End");
+		parser.addToAcceptingNet(net, "Start -> {tau 1.0} -> p1 -> {x} -> End");
+		parser.addToAcceptingNet(net, "Start -> {z 1.0} -> End");
+		XLog log = generator.buildPlayoutLog(net,5);
+		// silent should be lowest priority
+		XLog expected = converter.convertTextArgs("a","a","a","a","x");
+		assertLogEquals(log, expected);
+	}
 	
 	@Test
 	public void leftoverWithDuplicates() {
@@ -312,12 +324,15 @@ public class StochasticPlayoutGeneratorTest {
 				"Start -> {D 1.0} -> End");
 		parser.addToAcceptingNet(net, 
 				"Start -> {B 9.0} -> p1 -> {E} -> p2 -> {tau__1} -> p3 -> {tau__3} -> p4 -> {A} -> End");
-		parser.addToAcceptingNet(net,                          "p3 -> {C 10.0} -> p3");
+		parser.addToAcceptingNet(net,                          	   "p3 -> {C 10.0} -> p3");
 		XLog log = generator.buildPlayoutLog(net,10);
-		XLog expected1 = converter.convertTextArgs("D","B E A", "B E C C A", "B E C C C C A", 
-												   "B E C C C C C C",  "B E C C C C C C C",
-												   "B E C C C C C C C","B E C C C C C C C",
-												   "B E C C C C C C C","B E C C C C C C C");
+		XLog expected1 = converter.convertTextArgs("D","B E A", "B E C A", "B E C C A", 
+												   "B E C C C A",  
+												   "B E C C C C A",
+												   "B E C C C C C A",
+												   "B E C C C C C C",
+												   "B E C C C C C C C",
+												   "B E C C C C C C C");
 		assertLogEquals(log, expected1);
 	}
 	
