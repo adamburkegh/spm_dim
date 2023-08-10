@@ -250,6 +250,11 @@ withCallingHandlers(message = warning_handler, {
 } )
 pfc(rdd)
 
+# Due to a bug, which turned out to be a good insight into the behaviour of alpha
+# precision, the field ALPHA_PRECISION_UNRESTRICTED_ZERO is actually the measure
+# EXISTENTIAL_PRECISION (XPU). This was part of the dev process for XPU.
+rundata <- rundata %>% rename(EXISTENTIAL_PRECISION = ALPHA_PRECISION_UNRESTRICTED_ZERO) 
+
 rdprescale <- rundata
 
 
@@ -298,7 +303,7 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
                       HJPT = ENTROPY_PRECISION_TRACEPROJECT,
                       HJFT = ENTROPY_FITNESS_TRACEPROJECT ,
                       CSS = MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,
-                      APU0 = ALPHA_PRECISION_UNRESTRICTED_ZERO,
+                      XPU = EXISTENTIAL_PRECISION,
                       HRU = ENTROPIC_RELEVANCE_UNIFORM,
                       HRZ = ENTROPIC_RELEVANCE_ZERO_ORDER,
                       HRR = ENTROPIC_RELEVANCE_RESTRICTED_ZO,
@@ -314,13 +319,13 @@ rdshortname <- rundata %>% select (where(is.numeric) ) %>%
                          SSENC,SSEDC,SSS,
                          TGF5,TGDU,
                          HJPT,HJFT,
-                         APU0,
+                         XPU,
                          HRU,HRZ,HRR)
 
 logcor <- cor(rdshortname)
 prepfig("corlog4",ctlogns, width=30, height=30)
-# corrplot(logcor, method="circle", tl.cex=1.5, cl.cex=1.8)
-corrplot(logcor, method='number', tl.cex=1.5, cl.cex=1.8)
+corrplot(logcor, method="circle", tl.cex=1.5, cl.cex=1.8)
+# corrplot(logcor, method='number', tl.cex=1.5, cl.cex=1.8)
 postfig()
 
 
@@ -354,7 +359,7 @@ rdo <- rundata %>%
 				  # MODEL_ENTITY_COUNT,
 				  MODEL_EDGE_COUNT,
 				  # MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,
-				  ALPHA_PRECISION_UNRESTRICTED_ZERO,
+				  EXISTENTIAL_PRECISION,
 				  ENTROPIC_RELEVANCE_RESTRICTED_ZO,
 				  ENTROPIC_RELEVANCE_UNIFORM,
 				  ENTROPIC_RELEVANCE_ZERO_ORDER,
@@ -392,7 +397,7 @@ rdnl <- rdnl %>%  select (
 				  # MODEL_ENTITY_COUNT,
 				  MODEL_EDGE_COUNT,
 				  # MODEL_STRUCTURAL_STOCHASTIC_COMPLEXITY,  # test excl complexity
-				  ALPHA_PRECISION_UNRESTRICTED_ZERO			  
+				  EXISTENTIAL_PRECISION			  
 				  )
 
 
