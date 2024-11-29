@@ -40,13 +40,6 @@ public class RelevanceTestUtils {
 		tfE2.putFreq( TraceFreqTest.toTrace("a b e e"), 10 );
 		tfE2.putFreq( TraceFreqTest.toTrace("a b c f f"), 10 );
 		ActivityFreq afE2 = fslGen.calculateActivityFreqForTF(tfE2);
-//		ActivityFreq afE2 = new ActivityFreq();
-//		afE2.putFreq("a", 112);
-//		afE2.putFreq("b", 60);
-//		afE2.putFreq("c", 32);
-//		afE2.putFreq("d",  4);
-//		afE2.putFreq("e", 12);
-//		afE2.putFreq("f",  8);
 		logE2 = new FiniteStochasticLang(tfE2,afE2);
 		modelA1 = new TraceFreq();
 		modelA1.putFreq( TraceFreqTest.toTrace("a b"), 160 );
