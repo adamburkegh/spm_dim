@@ -4,7 +4,7 @@ Source code and results investigating stochastic process quality dimensions in p
 
 This also includes a genetic algorithm for mining stochastic process models, called the Stochastic Evolutionary Tree Miner (SETM). 
 
-The main paper describing these experiment is: Burke, Adam T., Sander J. J. Leemans, Moe T. Wynn, Wil M. P. van der Aalst, and Arthur H. M. ter Hofstede. 2024. “A Chance for Models to Show Their Quality: Stochastic Process Model-Log Dimensions.” Information Systems 124: 102382. [doi:10.1016/j.is.2024.102382](https://doi.org/10.1016/j.is.2024.102382).
+The main paper describing these experiments is: Burke, Adam T., Sander J. J. Leemans, Moe T. Wynn, Wil M. P. van der Aalst, and Arthur H. M. ter Hofstede. 2024. “A Chance for Models to Show Their Quality: Stochastic Process Model-Log Dimensions.” Information Systems 124: 102382. [doi:10.1016/j.is.2024.102382](https://doi.org/10.1016/j.is.2024.102382).
 
 # Development Setup and Installation
 
